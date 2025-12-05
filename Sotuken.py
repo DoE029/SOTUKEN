@@ -9,3 +9,4 @@ tasi = avg + sum
 print(tasi)
 print('aaaaaaaaa')
 print('sasasasasasdfgvcxsawerfgbsdfescvasas')
+print('test')
