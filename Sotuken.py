@@ -8,4 +8,4 @@ print(avg)
 tasi = avg + sum
 print(tasi)
 print('aaaaaaaaa')
-print('sasasasasasdfgvcxsawerfgbvasas')
+print('sasasasasasdfgvcxsawerfgbsdfescvasas')
