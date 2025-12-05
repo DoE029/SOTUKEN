@@ -7,3 +7,4 @@ print(avg)
 
 tasi = avg + sum
 print(tasi)
+print('aaaaaaaaa')
