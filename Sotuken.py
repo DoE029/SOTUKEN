@@ -4,3 +4,6 @@ print(sum)
 
 avg = sum / 2
 print(avg)
+
+tasi = avg + sum
+print(tasi)
