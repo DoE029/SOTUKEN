@@ -1,70 +1,60 @@
-a = 12
-
-print(a)
-
-'''
-import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO #ラズパイのどの線に指すか
 import time
+import asyncio # asyncioは、bleakと組み合わせるために必要です
 
-# --- GPIOピン番号の設定 ---
-SENSOR_PIN = 17  # センサーの入力ピン (例としてGPIO17)
-LED_PIN    = 27  # LEDの出力ピン (例としてGPIO27)
-BUZZER_PIN = 22  # ブザーの出力ピン (例としてGPIO22)
+# --- ⚙️ 設定定数 ---
+# GPIOピン番号 (BCMモード)
+# BCMモード → 汎用入出力ピンををPythonで制御する際に、ピンの番号を指定する方法
+LED_PIN    = 27  # LED接続ピン (GPIO27を使用する想定)
+BUZZER_PIN = 22  # ブザー接続ピン (GPIO22を使用する想定)
 
-# GPIO設定
-GPIO.setmode(GPIO.BCM)  # BCMモード (GPIO番号で指定)
-GPIO.setup(SENSOR_PIN, GPIO.IN)  # センサーは入力
-GPIO.setup(LED_PIN, GPIO.OUT)    # LEDは出力
-GPIO.setup(BUZZER_PIN, GPIO.OUT) # ブザーは出力
+# 🚨 警告パターン設定 🚨
+LED_BLINK_INTERVAL = 0.5  # LED点滅の間隔 (秒)
+BUZZER_DURATION = 0.2     # ブザーを鳴らす時間 (秒)
+BUZZER_SILENCE = 0.8      # ブザーの休止時間 (秒)
 
-def check_for_forgotten_item():
-    """センサーの状態をチェックし、忘れ物があれば通知する関数"""
+#GPIOの初期設定とクリーンアップ
+def setup_gpio():
+    """GPIOの初期設定を行う"""
+    # BCMモードでピン番号を指定
+    GPIO.setmode(GPIO.BCM) 
+    # ピンを出力(OUT)に設定
+    GPIO.setup(LED_PIN, GPIO.OUT) #27
+    GPIO.setup(BUZZER_PIN, GPIO.OUT) #22
     
-    # センサーの状態を読み取る (センサーの種類により読み取りロジックは変わります)
-    # 例: 赤外線センサーで、HIGHが「モノがない＝忘れ物」とする場合
-    sensor_state = GPIO.input(SENSOR_PIN)
-    
-    if sensor_state == GPIO.HIGH:
-        print("🚨 忘れ物を感知しました！")
-        # 忘れ物を知らせるアクション
-        GPIO.output(LED_PIN, GPIO.HIGH)  # LED点灯
-        # アクティブブザーの場合
-        GPIO.output(BUZZER_PIN, GPIO.HIGH)
-        time.sleep(1) # ブザーを1秒間鳴らす
-        GPIO.output(BUZZER_PIN, GPIO.LOW)
-    else:
-        print("✅ モノがあります。異常なし。")
-        GPIO.output(LED_PIN, GPIO.LOW) # LED消灯
-        
-try:
-    while True:
-        check_for_forgotten_item()
-        time.sleep(5)  # 5秒ごとにチェック
-        
-except KeyboardInterrupt:
-    print("システムを終了します")
-    
-finally:
-    GPIO.cleanup() # GPIO設定をリセット
-'''
+    # 初期状態はすべてOFF
+    GPIO.output(LED_PIN, GPIO.LOW)
+    GPIO.output(BUZZER_PIN, GPIO.LOW)
+    print("GPIO初期設定完了。")
 
-'''
-# PCでの動作確認用ダミー関数
-def simulate_gpio_output(pin, state):
-    state_str = "HIGH (点灯/鳴動)" if state == 1 else "LOW (消灯)"
-    print(f"  [GPIOシミュレーション] ピン{pin}を {state_str} に設定")
+def cleanup_gpio():
+    """プログラム終了時にGPIO設定をリセットする"""
+    # すべてのピンの状態を解放
+    GPIO.cleanup()
+    print("GPIOクリーンアップ完了。")
 
-def check_for_forgotten_item():
-    # ... (ビーコン検出ロジックはPCで実行可能) ...
+#通知制御関数
+#BLEビーコンのファイルから「スキャンとチェック」の関数から呼び出して使う
+
+#忘れ物があった場合の１回通知してくれる
+def notify_warning_once():
+    """
+    警告アクションを1回実行する（LED点灯と短時間のブザー鳴動）。
+    警告が継続する場合は、これを繰り返し呼び出す。
+    """
+    # 1. LED点灯 (点滅はループ側で制御するため、ここではONにする)
+    GPIO.output(LED_PIN, GPIO.HIGH)
     
-    found_beacon = False # 仮に検出できなかったと仮定
+    # 2. ブザーを短く鳴らす
+    GPIO.output(BUZZER_PIN, GPIO.HIGH)  #ブザーオン
+    time.sleep(BUZZER_DURATION)         #ブザー0.2秒間なる
+    GPIO.output(BUZZER_PIN, GPIO.LOW)   #ブザーオフ
     
-    if not found_beacon:
-        print("忘れ物を感知しました！")
-        # 実際のGPIO制御関数をダミー関数に置き換える
-        simulate_gpio_output(27, 1) # LED ON
-        simulate_gpio_output(22, 1) # BUZZER ON
-    else:
-        print("異常なし。")
-        simulate_gpio_output(27, 0) # LED OFF
-'''
+#忘れ物がそろったら
+def notify_normal():
+    """正常状態を通知する（LED、ブザーをOFFにする）"""
+    GPIO.output(LED_PIN, GPIO.LOW)
+    GPIO.output(BUZZER_PIN, GPIO.LOW)
+
+
+
