@@ -37,7 +37,7 @@ def cleanup_gpio():
 #BLEビーコンのファイルから「スキャンとチェック」の関数から呼び出して使う
 
 #忘れ物があった場合の１回通知してくれる
-def notify_warning_once():
+def notify_warning_once(times = 3):
     """
     警告アクションを1回実行する（LED点灯と短時間のブザー鳴動）。
     警告が継続する場合は、これを繰り返し呼び出す。
@@ -45,10 +45,12 @@ def notify_warning_once():
     # 1. LED点灯 (点滅はループ側で制御するため、ここではONにする)
     GPIO.output(LED_PIN, GPIO.HIGH)
     
-    # 2. ブザーを短く鳴らす
-    GPIO.output(BUZZER_PIN, GPIO.HIGH)  #ブザーオン
-    time.sleep(BUZZER_DURATION)         #ブザー0.2秒間なる
-    GPIO.output(BUZZER_PIN, GPIO.LOW)   #ブザーオフ
+    # 2. ブザーを短く鳴らす(繰り返し)
+    for _ in range(times):
+        GPIO.output(BUZZER_PIN, GPIO.HIGH)  #ブザーオン
+        time.sleep(BUZZER_DURATION)         #ブザー0.2秒間なる
+        GPIO.output(BUZZER_PIN, GPIO.LOW)   #ブザーオフ
+        time.sleep(0.5)  # 休止時間を追加（音を不自然にしないため）
     
 #忘れ物がそろったら
 def notify_normal():
