@@ -1,9 +1,8 @@
 # --- 必要なライブラリをインポート ---
 import asyncio                # 非同期処理（BLEスキャンで使用）
-import time                   # スリープ処理などに使用
 import datetime               # ログに時刻を記録するために使用
-from BLE_beacon import scan_beacon   # BLEビーコン検知処理（別ファイルから読み込み）
-import LED_Buzzer_v2 as gpio        # GPIO制御処理（別ファイルから読み込み）
+from BLE_beacon_v2 import scan_beacon   # BLEビーコン検知処理（別ファイルから読み込み）
+import LED_Buzzer_v3 as gpio            # GPIO制御処理（別ファイルから読み込み）
 
 # --- RSSIしきい値設定 ---
 RSSI_THRESHOLD = -60          # RSSIがこの値より強ければ「近い」と判定
@@ -11,9 +10,6 @@ LOG_FILE = "beacon_log.txt"   # ログを保存するファイル名
 
 # --- 検知結果をログに残し、GPIO制御を呼び出す関数 ---
 def update_and_log(beacons, target_ids):
-    """
-    BLE検知結果をログに残し、GPIO制御を呼び出す
-    """
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # 検知結果をログファイルに追記
@@ -47,15 +43,18 @@ async def main_loop(target_ids):
                 beacons = await scan_beacon(timeout=5, target_ids=target_ids)
 
                 if not beacons:
-                    print("ビーコンが見つかりませんでした")
+                    print(f"{now.strftime('%H:%M:%S')} ⚠️ ビーコンが見つかりませんでした")
+                    with open(LOG_FILE, "a") as f:
+                        f.write(f"{now.strftime('%Y-%m-%d %H:%M:%S')} | 検知なし\n")
                 else:
                     update_and_log(beacons, target_ids)
 
-                time.sleep(2)  # 次のスキャンまで待機
+                # 非同期sleepに変更
+                await asyncio.sleep(2)
             else:
                 # 監視時間外は休止
                 print(f"{now.strftime('%H:%M')} → 監視時間外です。待機中...")
-                time.sleep(60)  # 1分ごとに再チェック
+                await asyncio.sleep(60)
 
     except KeyboardInterrupt:
         print("終了します")
@@ -64,5 +63,5 @@ async def main_loop(target_ids):
 
 # --- プログラムのエントリーポイント ---
 if __name__ == "__main__":
-    target_ids = ["AA:BB:CC:DD:EE:FF", "11:22:33:44:55:66"]
+    target_ids = ["DC:0D:30:16:88:8B", "DC:0D:30:16:87:F1"]  # 実際のビーコンMACアドレス
     asyncio.run(main_loop(target_ids))
