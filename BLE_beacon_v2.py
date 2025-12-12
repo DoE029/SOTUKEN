@@ -10,7 +10,8 @@ async def scan_beacon(timeout=5, target_ids=None):
     beacon = []
 
     for d in devices:
-        rssi = d.metadata.get("rssi", None)  # 修正済み
+        # 古い bleak では d.rssi が有効
+        rssi = getattr(d, "rssi", None)
         if target_ids is None or d.address.lower() in [addr.lower() for addr in target_ids]:
             beacon_info = {
                 "id": d.address,
