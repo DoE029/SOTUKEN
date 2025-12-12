@@ -2,11 +2,11 @@ import RPi.GPIO as GPIO
 import time
 
 # --- ⚙️ GPIOピン設定 ⚙️ ---
-LED1_BLUE = 17       # 持ち物A用 青LED
-LED1_RED  = 22       # 持ち物A用 赤LED
-LED2_BLUE = 27       # 持ち物B用 青LED
-LED2_RED  = 5        # 持ち物B用 赤LED（例としてGPIO5を使用）
-BUZZER_PIN = 23      # ブザー
+LED1_BLUE = 22       # 持ち物A用 青LED
+LED1_RED  = 24       # 持ち物A用 赤LED
+LED2_BLUE = 26       # 持ち物B用 青LED
+LED2_RED  = 28      # 持ち物B用 赤LED（例としてGPIO5を使用）
+BUZZER_PIN = 21      # ブザー
 
 # --- ⚙️ 動作パラメータ ⚙️ ---
 BUZZER_DURATION = 0.2
