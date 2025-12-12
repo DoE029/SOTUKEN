@@ -3,7 +3,7 @@ import datetime
 from BLE_beacon_v2 import scan_beacon
 import LED_Buzzer_v3 as gpio
 
-RSSI_THRESHOLD = -60
+RSSI_THRESHOLD = -90   # テスト時は緩めておく
 LOG_FILE = "beacon_log.txt"
 
 def update_and_log(beacons, target_ids):
@@ -55,5 +55,5 @@ async def main_loop(target_ids):
         print("GPIOクリーンアップ完了")
 
 if __name__ == "__main__":
-    target_ids = ["DC:0D:30:16:88:8B", "DC:0D:30:16:87:F1"]
+    target_ids = ["DC:0D:30:16:88:8B", "DC:0D:30:16:87:F1"]  # 実際のビーコンMACアドレスに置き換える
     asyncio.run(main_loop(target_ids))
