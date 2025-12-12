@@ -31,14 +31,3 @@ def judge_range(beacon, threshold=-50):
         return "near"
     else:
         return "far"
-
-if __name__ == "__main__":
-    TARGET_IDS = ["DC:0D:30:16:88:8B", "DC:0D:30:16:87:F1"]
-    beacon = asyncio.run(scan_beacon(timeout=5, target_ids=TARGET_IDS))
-
-    if not beacon:
-        print("ターゲットビーコンが見つかりませんでした")
-    else:
-        for b in beacon:
-            status = judge_range(b, threshold=-50)
-            print(f"検知: {b['id']} (RSSI = {b['rssi']}dBm) → {status}")

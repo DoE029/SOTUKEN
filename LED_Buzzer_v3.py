@@ -47,7 +47,7 @@ def update_status(beacons, target_ids):
         GPIO.output(LED1_RED, GPIO.LOW)
     else:
         GPIO.output(LED1_BLUE, GPIO.LOW)
-        blink_led(LED1_RED, times=3)
+        GPIO.output(LED1_RED, GPIO.HIGH)  # 常時オンに修正
 
     # 持ち物B
     if target_ids[1] in found_ids:
@@ -55,10 +55,10 @@ def update_status(beacons, target_ids):
         GPIO.output(LED2_RED, GPIO.LOW)
     else:
         GPIO.output(LED2_BLUE, GPIO.LOW)
-        blink_led(LED2_RED, times=3)
+        GPIO.output(LED2_RED, GPIO.HIGH)  # 常時オンに修正
 
     # 全体判定
     if all(t in found_ids for t in target_ids):
         GPIO.output(BUZZER_PIN, GPIO.LOW)
     else:
-        buzzer_warning(times=3)
+        GPIO.output(BUZZER_PIN, GPIO.HIGH)  # 不足があれば鳴らす
