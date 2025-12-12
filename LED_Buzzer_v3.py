@@ -2,11 +2,11 @@ import RPi.GPIO as GPIO
 import time
 
 # --- ⚙️ GPIOピン設定 ⚙️ ---
-LED1_BLUE = 22
-LED1_RED  = 24
-LED2_BLUE = 26
-LED2_RED  = 28        # BCMで存在するピンに修正
-BUZZER_PIN = 21
+LED1_BLUE = 11
+LED1_RED  = 25
+LED2_BLUE = 8
+LED2_RED  = 7        # BCMで存在するピンに修正
+BUZZER_PIN = 9
 
 # --- ⚙️ 動作パラメータ ⚙️ ---
 BUZZER_DURATION = 0.2
