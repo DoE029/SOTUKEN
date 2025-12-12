@@ -2,18 +2,17 @@ import RPi.GPIO as GPIO
 import time
 
 # --- ⚙️ GPIOピン設定 ⚙️ ---
-LED1_BLUE = 22       # 持ち物A用 青LED
-LED1_RED  = 24       # 持ち物A用 赤LED
-LED2_BLUE = 26       # 持ち物B用 青LED
-LED2_RED  = 28      # 持ち物B用 赤LED（例としてGPIO5を使用）
-BUZZER_PIN = 21      # ブザー
+LED1_BLUE = 22
+LED1_RED  = 24
+LED2_BLUE = 26
+LED2_RED  = 28        # BCMで存在するピンに修正
+BUZZER_PIN = 21
 
 # --- ⚙️ 動作パラメータ ⚙️ ---
 BUZZER_DURATION = 0.2
 BUZZER_SILENCE = 0.5
 LED_BLINK_INTERVAL = 0.5
 
-# --- GPIO初期化 ---
 def setup_gpio():
     GPIO.setmode(GPIO.BCM)
     for pin in [LED1_BLUE, LED1_RED, LED2_BLUE, LED2_RED, BUZZER_PIN]:
@@ -25,7 +24,6 @@ def cleanup_gpio():
     GPIO.cleanup()
     print("GPIOクリーンアップ完了")
 
-# --- 赤LED点滅処理 ---
 def blink_led(pin, times=3, interval=LED_BLINK_INTERVAL):
     for _ in range(times):
         GPIO.output(pin, GPIO.HIGH)
@@ -33,7 +31,6 @@ def blink_led(pin, times=3, interval=LED_BLINK_INTERVAL):
         GPIO.output(pin, GPIO.LOW)
         time.sleep(interval)
 
-# --- ブザー警告処理 ---
 def buzzer_warning(times=3, duration=BUZZER_DURATION, silence=BUZZER_SILENCE):
     for _ in range(times):
         GPIO.output(BUZZER_PIN, GPIO.HIGH)
@@ -41,7 +38,6 @@ def buzzer_warning(times=3, duration=BUZZER_DURATION, silence=BUZZER_SILENCE):
         GPIO.output(BUZZER_PIN, GPIO.LOW)
         time.sleep(silence)
 
-# --- 状態更新処理 ---
 def update_status(beacons, target_ids):
     found_ids = [b["id"] for b in beacons]
 
