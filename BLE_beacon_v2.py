@@ -10,8 +10,7 @@ async def scan_beacon(timeout=5, target_ids=None):
     beacon = []
 
     for d in devices:
-        # RSSIは metadata に含まれる（新しい bleak 仕様）
-        rssi = d.metadata.get("rssi", None)
+        rssi = d.metadata.get("rssi", None)  # 修正済み
         if target_ids is None or d.address.lower() in [addr.lower() for addr in target_ids]:
             beacon_info = {
                 "id": d.address,

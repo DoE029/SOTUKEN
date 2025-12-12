@@ -61,4 +61,9 @@ def update_status(beacons, target_ids):
     if all(t in found_ids for t in target_ids):
         GPIO.output(BUZZER_PIN, GPIO.LOW)
     else:
-        GPIO.output(BUZZER_PIN, GPIO.HIGH)  # 不足があれば鳴らす
+        # 不足があれば「ぴっぴっぴ」と鳴らす
+        for _ in range(3):
+            GPIO.output(BUZZER_PIN, GPIO.HIGH)
+            time.sleep(0.2)   # ピッ
+            GPIO.output(BUZZER_PIN, GPIO.LOW)
+            time.sleep(0.3)   # 間隔
