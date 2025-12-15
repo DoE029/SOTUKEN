@@ -5,9 +5,6 @@ import LED_Buzzer_v3 as gpio
 
 LOG_FILE = "beacon_log.txt"
 
-# --- 近距離しきい値（玄関0.5m目安） ---
-NEAR_RSSI_THRESHOLD = -50   # 0.5m程度を想定（環境に応じて -48〜-52 に調整）
-
 # 最新の検知状態を保持（ブザータスクが参照）
 latest_beacons = []
 
@@ -19,23 +16,14 @@ def update_and_log(beacons, target_ids):
     with open(LOG_FILE, "a") as f:
         f.write(f"{timestamp} | 検知: {beacons}\n")
 
-    # RSSIしきい値で近距離のみ抽出
-    near_beacons = []
-    targets_lower = [t.lower() for t in target_ids]
-    for b in beacons:
-        rssi = b.get("rssi")
-        if rssi is not None and rssi > NEAR_RSSI_THRESHOLD and b["id"].lower() in targets_lower:
-            near_beacons.append(b)
+    # GPIO制御（検知したら青点灯・赤消灯）
+    gpio.update_status(beacons, target_ids)
 
-    # GPIO制御（近距離のみで青点灯・赤消灯）
-    gpio.update_status(near_beacons, target_ids)
-
-    # 両方近距離で揃っているか
-    near_ids = [b["id"].lower() for b in near_beacons]
-    if all(t.lower() in near_ids for t in target_ids):
-        print(f"{timestamp} ✅ 玄関範囲で全部揃いました（~0.5m）")
+    found_ids = [b["id"].lower() for b in beacons]
+    if all(t.lower() in found_ids for t in target_ids):
+        print(f"{timestamp} ✅ 全部揃いました")
     else:
-        print(f"{timestamp} ⚠️ 不足があります（遠いか未検知）")
+        print(f"{timestamp} ⚠️ 不足があります")
 
 async def buzzer_task(target_ids):
     """スキャン中も不足があれば鳴らす常駐タスク"""
