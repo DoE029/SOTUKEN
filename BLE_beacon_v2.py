@@ -1,32 +1,30 @@
 import asyncio
 from bleak import BleakScanner
 
-async def scan_beacon(timeout=5, target_ids=None):
-    """
-    BLEビーコンをスキャンする処理
-    """
+async def scan_beacon(timeout=2, target_ids=None):
+    """BLEビーコンをスキャンする処理"""
     print(f"{timeout}秒スキャンを開始")
     devices = await BleakScanner.discover(timeout=timeout)
-    beacon = []
+    beacons = []
+
+    targets_lower = [addr.lower() for addr in target_ids] if target_ids else None
 
     for d in devices:
-        rssi = d.metadata.get("rssi", None)  # 修正済み
-        if target_ids is None or d.address.lower() in [addr.lower() for addr in target_ids]:
+        # bleak バージョン差分に耐える RSSI 取得
+        rssi = None
+        if hasattr(d, "rssi"):
+            rssi = d.rssi
+        else:
+            md = getattr(d, "metadata", None)
+            if isinstance(md, dict):
+                rssi = md.get("rssi", None)
+
+        if targets_lower is None or d.address.lower() in targets_lower:
             beacon_info = {
                 "id": d.address,
                 "name": d.name if d.name else "Unknown",
                 "rssi": rssi
             }
-            beacon.append(beacon_info)
+            beacons.append(beacon_info)
 
-    return beacon
-
-def judge_range(beacon, threshold=-50):
-    """
-    RSSI値から近距離/遠距離を判定
-    """
-    rssi = beacon.get("rssi")
-    if rssi is not None and rssi > threshold:
-        return "near"
-    else:
-        return "far"
+    return beacons

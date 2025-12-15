@@ -1,20 +1,20 @@
 import RPi.GPIO as GPIO
 import time
 
-# --- ⚙️ GPIOピン設定 ⚙️ ---
+# --- ⚙️ GPIOピン設定（BCM） ---
 LED1_BLUE = 11
 LED1_RED  = 25
 LED2_BLUE = 8
-LED2_RED  = 7        # BCMで存在するピンに修正
+LED2_RED  = 7
 BUZZER_PIN = 9
 
-# --- ⚙️ 動作パラメータ ⚙️ ---
+# --- ⚙️ 動作パラメータ ---
 BUZZER_DURATION = 0.2
-BUZZER_SILENCE = 0.5
-LED_BLINK_INTERVAL = 0.5
+BUZZER_INTERVAL = 0.3
 
 def setup_gpio():
     GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
     for pin in [LED1_BLUE, LED1_RED, LED2_BLUE, LED2_RED, BUZZER_PIN]:
         GPIO.setup(pin, GPIO.OUT)
         GPIO.output(pin, GPIO.LOW)
@@ -24,46 +24,37 @@ def cleanup_gpio():
     GPIO.cleanup()
     print("GPIOクリーンアップ完了")
 
-def blink_led(pin, times=3, interval=LED_BLINK_INTERVAL):
-    for _ in range(times):
-        GPIO.output(pin, GPIO.HIGH)
-        time.sleep(interval)
-        GPIO.output(pin, GPIO.LOW)
-        time.sleep(interval)
-
-def buzzer_warning(times=3, duration=BUZZER_DURATION, silence=BUZZER_SILENCE):
-    for _ in range(times):
+def buzzer_warning():
+    """不足がある間はぴぴぴを鳴らす"""
+    for _ in range(3):
         GPIO.output(BUZZER_PIN, GPIO.HIGH)
-        time.sleep(duration)
+        time.sleep(BUZZER_DURATION)
         GPIO.output(BUZZER_PIN, GPIO.LOW)
-        time.sleep(silence)
+        time.sleep(BUZZER_INTERVAL)
 
 def update_status(beacons, target_ids):
-    found_ids = [b["id"] for b in beacons]
+    """検知したら青点灯・赤消灯。未検知なら赤点灯"""
+    found_ids = [b["id"].lower() for b in beacons]
+    t0, t1 = target_ids[0].lower(), target_ids[1].lower()
 
     # 持ち物A
-    if target_ids[0] in found_ids:
+    if t0 in found_ids:
         GPIO.output(LED1_BLUE, GPIO.HIGH)
         GPIO.output(LED1_RED, GPIO.LOW)
     else:
         GPIO.output(LED1_BLUE, GPIO.LOW)
-        GPIO.output(LED1_RED, GPIO.HIGH)  # 常時オンに修正
+        GPIO.output(LED1_RED, GPIO.HIGH)
 
     # 持ち物B
-    if target_ids[1] in found_ids:
+    if t1 in found_ids:
         GPIO.output(LED2_BLUE, GPIO.HIGH)
         GPIO.output(LED2_RED, GPIO.LOW)
     else:
         GPIO.output(LED2_BLUE, GPIO.LOW)
-        GPIO.output(LED2_RED, GPIO.HIGH)  # 常時オンに修正
+        GPIO.output(LED2_RED, GPIO.HIGH)
 
-    # 全体判定
-    if all(t in found_ids for t in target_ids):
+    # 両方揃っているか
+    if t0 in found_ids and t1 in found_ids:
         GPIO.output(BUZZER_PIN, GPIO.LOW)
     else:
-        # 不足があれば「ぴっぴっぴ」と鳴らす
-        for _ in range(3):
-            GPIO.output(BUZZER_PIN, GPIO.HIGH)
-            time.sleep(0.2)   # ピッ
-            GPIO.output(BUZZER_PIN, GPIO.LOW)
-            time.sleep(0.3)   # 間隔
+        buzzer_warning()
