@@ -3,52 +3,28 @@ import datetime
 from BLE_beacon_v2 import scan_beacon
 import LED_Buzzer_v3 as gpio
 
-# --- 近距離しきい値（1m目安） ---
-# -55 で近すぎる/遠すぎる場合は -58〜-62 あたりを試してください
-NEAR_RSSI_THRESHOLD = -55
-HYST_ON_MARGIN = 3   # 近距離「オン」判定はしきい値より +3dB 強く
-HYST_OFF_MARGIN = 3  # 「オフ」判定はしきい値より -3dB 弱く
-
 LOG_FILE = "beacon_log.txt"
 
-# 近距離状態を保持（ヒステリシス用）
-near_state = {}  # { mac_lower: bool }
+# --- 近距離しきい値（玄関0.5m目安） ---
+NEAR_RSSI_THRESHOLD = -50   # 0.5m程度を想定（環境に応じて -48〜-52 に調整）
+
+# 最新の検知状態を保持（ブザータスクが参照）
+latest_beacons = []
 
 def update_and_log(beacons, target_ids):
+    global latest_beacons
+    latest_beacons = beacons  # 状態を保存
+
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    # ログ（全検知）
     with open(LOG_FILE, "a") as f:
-        f.write(f"{timestamp} | 全検知: {beacons}\n")
+        f.write(f"{timestamp} | 検知: {beacons}\n")
 
-    # 近距離のみ抽出（ヒステリシス適用）
+    # RSSIしきい値で近距離のみ抽出
     near_beacons = []
     targets_lower = [t.lower() for t in target_ids]
     for b in beacons:
-        mac = b["id"].lower()
-        if mac not in targets_lower:
-            continue
-
         rssi = b.get("rssi")
-        prev_near = near_state.get(mac, False)
-
-        if rssi is None:
-            # RSSI不明なら前回状態を維持
-            is_near = prev_near
-        else:
-            # ヒステリシス: ON/OFFの閾値に幅を持たせて誤判定を減らす
-            on_thresh = NEAR_RSSI_THRESHOLD + HYST_ON_MARGIN
-            off_thresh = NEAR_RSSI_THRESHOLD - HYST_OFF_MARGIN
-
-            if prev_near:
-                # 近距離継続にはそこまで強くなくてもOK（オフ判定まで下がらない限り維持）
-                is_near = (rssi > off_thresh)
-            else:
-                # 新規で近距離に入るには少し強めに
-                is_near = (rssi > on_thresh)
-
-        near_state[mac] = is_near
-        if is_near:
+        if rssi is not None and rssi > NEAR_RSSI_THRESHOLD and b["id"].lower() in targets_lower:
             near_beacons.append(b)
 
     # GPIO制御（近距離のみで青点灯・赤消灯）
@@ -57,13 +33,24 @@ def update_and_log(beacons, target_ids):
     # 両方近距離で揃っているか
     near_ids = [b["id"].lower() for b in near_beacons]
     if all(t.lower() in near_ids for t in target_ids):
-        print(f"{timestamp} ✅ 近距離で全部揃いました（~1m）")
+        print(f"{timestamp} ✅ 玄関範囲で全部揃いました（~0.5m）")
     else:
         print(f"{timestamp} ⚠️ 不足があります（遠いか未検知）")
+
+async def buzzer_task(target_ids):
+    """スキャン中も不足があれば鳴らす常駐タスク"""
+    while True:
+        found_ids = [b["id"].lower() for b in latest_beacons]
+        if not all(t.lower() in found_ids for t in target_ids):
+            gpio.buzzer_warning()
+        await asyncio.sleep(1)  # 1秒ごとにチェック
 
 async def main_loop(target_ids):
     gpio.setup_gpio()
     try:
+        # ブザー常駐タスクを並行実行
+        asyncio.create_task(buzzer_task(target_ids))
+
         while True:
             try:
                 # 8秒に1回スキャン（2秒スキャン＋6秒休止）
@@ -77,7 +64,7 @@ async def main_loop(target_ids):
 
             if not beacons:
                 now_str = datetime.datetime.now().strftime('%H:%M:%S')
-                print(f"{now_str} ⚠️ ターゲットが見つかりませんでした")
+                print(f"{now_str} ⚠️ ビーコンが見つかりませんでした")
                 with open(LOG_FILE, "a") as f:
                     f.write(f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | 検知なし\n")
                 gpio.update_status([], target_ids)
