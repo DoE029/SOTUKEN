@@ -1,7 +1,7 @@
 import asyncio
 import datetime
 from BLE_beacon_v2 import scan_beacon
-import LED_Buzzer_v3 as gpio
+import LED_Buzzer_v4 as gpio
 
 LOG_FILE = "beacon_log.txt"
 
