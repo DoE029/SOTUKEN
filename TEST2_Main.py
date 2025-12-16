@@ -51,6 +51,14 @@ async def buzzer_task(target_ids):
             print("ブザー警告タスクを停止します。")
             break
 
+import asyncio
+import datetime
+from BLE_beacon_v2 import scan_beacon
+import LED_Buzzer_v3 as gpio
+
+LOG_FILE = "beacon_log.txt"
+# latest_beacons, update_and_log, buzzer_task は他のファイルや定義に依存
+
 async def main_loop(target_ids):
     gpio.setup_gpio()
     # ブザータスクのハンドルを保持
@@ -58,53 +66,61 @@ async def main_loop(target_ids):
     
     try:
         while True:
+            # 🔽🔽🔽 メインループ処理（中略部分）を補完 🔽🔽🔽
             try:
                 # 8秒に1回スキャン（2秒スキャン＋6秒休止）
+                # target_idsで対象を絞り込む
                 beacons = await scan_beacon(timeout=2, target_ids=target_ids)
             except Exception as e:
                 now_str = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 print(f"{now_str} ⚠️ スキャンで例外発生: {e}")
                 with open(LOG_FILE, "a") as f:
                     f.write(f"{now_str} | スキャン失敗: {e}\n")
-                beacons = []
+                beacons = [] # エラー時は空リストとして扱う
 
             if not beacons:
                 now_str = datetime.datetime.now().strftime('%H:%M:%S')
                 print(f"{now_str} ⚠️ ビーコンが見つかりませんでした")
+                # 検知なしをログに記録
                 with open(LOG_FILE, "a") as f:
                     f.write(f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | 検知なし\n")
+                # GPIOの状態を「検知なし」として更新
                 gpio.update_status([], target_ids)
+                all_found = False # 検知なしは当然ながら全部揃っていない
+
             else:
                 # ビーコン検知時: 状態更新とログ記録、そして全部揃ったかチェック
                 all_found = update_and_log(beacons, target_ids)
-                
-                if all_found:
-                    # ✅ 全部揃ったのでメインループを抜ける
-                    break
-
-            await asyncio.sleep(6)  # 合計8秒周期
+            # 🔼🔼🔼 メインループ処理（中略部分）を補完 🔼🔼🔼
+            
+            if all_found:
+                # ✅ 全部揃ったのでメインループを抜ける
+                break # 終了条件達成
+            
+            await asyncio.sleep(6)  # スキャン時間(2秒)と合わせて合計8秒周期
 
     except KeyboardInterrupt:
-        print("\n手動で終了します")
+        # 終了メッセージはfinallyに任せる
+        print("\n手動での終了操作を検出しました...") 
     finally:
         # メインループ終了時または手動終了時
         
         # 1. ブザータスクをキャンセル
         if buzzer_handle:
             buzzer_handle.cancel()
-            # キャンセルが完了するのを待つ（タイムアウトを設けて安全に）
             try:
                 await asyncio.wait_for(buzzer_handle, timeout=1.0)
-            except asyncio.TimeoutError:
-                print("ブザー警告タスクの停止がタイムアウトしました。")
-            except asyncio.CancelledError:
-                pass # 既にキャンセルされたのでOK
+            except (asyncio.TimeoutError, asyncio.CancelledError):
+                pass
                 
         # 2. GPIOクリーンアップ
         gpio.cleanup_gpio()
+        
+        # 3. 終了メッセージを一本化
         print("GPIOクリーンアップ完了")
-        # 3. 終了メッセージ
         print("システムを終了します")
+
+# (update_and_log, buzzer_task, if __name__ == "__main__": 部分は省略)
 
 if __name__ == "__main__":
     target_ids = ["DC:0D:30:16:88:8B", "DC:0D:30:16:87:F1"]
