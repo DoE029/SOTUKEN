@@ -92,16 +92,15 @@ async def main_loop(target_ids):
                         pass
                 
                 # 2. 青ランプを点滅 (例: 3回点滅、合計3秒)
-                BLINK_COUNT = 3
-                BLINK_DURATION = 0.5 # ONとOFFを0.5秒ずつ
-
-                # ✅ 関数名を set_all_blue_leds に修正
                 try:
-                    for i in range(BLINK_COUNT):
-                        gpio.set_all_blue_leds(True) # ON
-                        await asyncio.sleep(BLINK_DURATION)
-                        gpio.set_all_blue_leds(False) # OFF
-                        await asyncio.sleep(BLINK_DURATION)
+                    # update_and_logで既に点灯しているはずですが、確実にHIGHにします
+                    gpio.set_all_blue_leds(True) 
+                    
+                    # 10秒間待機
+                    await asyncio.sleep(10)
+                    
+                    # Note: 青ランプをOFFにする処理は、
+                    # finallyブロック内の gpio.cleanup_gpio() が実行時に自動で行います。
                 except AttributeError:
                     print("⚠️ LED_Buzzer_v3に set_all_blue_leds 関数がないため点滅をスキップしました。")
                 
