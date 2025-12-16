@@ -9,8 +9,9 @@ LED2_RED  = 7
 BUZZER_PIN = 9
 
 # --- ⚙️ 動作パラメータ ---
-BUZZER_DURATION = 0.15   # ← ピッの長さを短めに
-BUZZER_INTERVAL = 0.5    # ← ピッとピッの間隔を少し長めに
+BUZZER_DURATION = 0.2
+BUZZER_INTERVAL = 0.5
+
 
 def setup_gpio():
     GPIO.setmode(GPIO.BCM)
