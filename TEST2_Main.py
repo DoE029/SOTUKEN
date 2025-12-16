@@ -1,7 +1,7 @@
 import asyncio
 import datetime
 from BLE_beacon_v2 import scan_beacon
-import LED_Buzzer_v3 as gpio
+import LED_Buzzer_v4 as gpio
 
 LOG_FILE = "beacon_log.txt"
 
@@ -58,7 +58,7 @@ async def main_loop(target_ids):
     
     try:
         while True:
-            # 🔽🔽🔽 メインループ処理 🔽🔽🔽
+            # 🔽🔽🔽 メインループ処理（スキャン、判定など） 🔽🔽🔽
             try:
                 # 8秒に1回スキャン（2秒スキャン＋6秒休止）
                 beacons = await scan_beacon(timeout=2, target_ids=target_ids)
@@ -67,7 +67,7 @@ async def main_loop(target_ids):
                 print(f"{now_str} ⚠️ スキャンで例外発生: {e}")
                 with open(LOG_FILE, "a") as f:
                     f.write(f"{now_str} | スキャン失敗: {e}\n")
-                beacons = [] # エラー時は空リストとして扱う
+                beacons = [] 
 
             if not beacons:
                 now_str = datetime.datetime.now().strftime('%H:%M:%S')
@@ -78,7 +78,7 @@ async def main_loop(target_ids):
                 all_found = False
             else:
                 all_found = update_and_log(beacons, target_ids)
-            # 🔼🔼🔼 メインループ処理 🔼🔼🔼
+            # 🔼🔼🔼 メインループ処理（スキャン、判定など） 🔼🔼🔼
             
             if all_found:
                 print(f"{datetime.datetime.now().strftime('%H:%M:%S')} ✨ 全部揃いました。点滅シーケンスへ移行します。")
@@ -86,7 +86,6 @@ async def main_loop(target_ids):
                 # 1. ブザー警告タスクを即座に停止
                 if buzzer_handle:
                     buzzer_handle.cancel()
-                    # キャンセルが完了するのを短時間待つ
                     try:
                         await asyncio.wait_for(buzzer_handle, timeout=0.1)
                     except (asyncio.TimeoutError, asyncio.CancelledError):
@@ -96,16 +95,15 @@ async def main_loop(target_ids):
                 BLINK_COUNT = 3
                 BLINK_DURATION = 0.5 # ONとOFFを0.5秒ずつ
 
-                # NOTE: gpio.set_blue_led(True/False) は仮のAPIです。
-                # 実際のLED_Buzzer_v3モジュールの関数名に修正してください。
+                # ✅ 関数名を set_all_blue_leds に修正
                 try:
                     for i in range(BLINK_COUNT):
-                        gpio.set_blue_led(True) # ON
+                        gpio.set_all_blue_leds(True) # ON
                         await asyncio.sleep(BLINK_DURATION)
-                        gpio.set_blue_led(False) # OFF
+                        gpio.set_all_blue_leds(False) # OFF
                         await asyncio.sleep(BLINK_DURATION)
                 except AttributeError:
-                    print("⚠️ LED_Buzzer_v3に set_blue_led 関数がないため点滅をスキップしました。")
+                    print("⚠️ LED_Buzzer_v3に set_all_blue_leds 関数がないため点滅をスキップしました。")
                 
                 # 3. メインループを抜ける
                 break # 終了へ
@@ -113,23 +111,18 @@ async def main_loop(target_ids):
             await asyncio.sleep(6) # スキャン時間(2秒)と合わせて合計8秒周期
 
     except KeyboardInterrupt:
-        # 手動終了のメッセージ（GPIOクリーンアップメッセージとは分ける）
+        # 手動終了のメッセージ
         print("\n手動での終了操作を検出しました...")
     finally:
-        # メインループ終了時（breakまたは例外）に必ず実行されるクリーンアップ
-        
-        # 1. ブザータスクがまだ実行中であれば、念のため完了を待つ（既にキャンセル済みのはず）
+        # ... (クリーンアップ処理は変更なし) ...
         if buzzer_handle:
             try:
-                # すでにキャンセルされていれば即座に例外が出るため、待機処理は軽めに
                 await asyncio.wait_for(buzzer_handle, timeout=0.1) 
             except (asyncio.TimeoutError, asyncio.CancelledError):
                 pass
                 
-        # 2. GPIOクリーンアップ
         gpio.cleanup_gpio()
         
-        # 3. 終了メッセージを一本化
         print("GPIOクリーンアップ完了")
         print("システムを終了します")
 

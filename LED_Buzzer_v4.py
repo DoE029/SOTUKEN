@@ -2,10 +2,10 @@ import RPi.GPIO as GPIO
 import time
 
 # --- ⚙️ GPIOピン設定（BCM） ---
-LED1_BLUE = 11
-LED1_RED = 25
-LED2_BLUE = 8
-LED2_RED = 7
+LED1_BLUE = 11  # 持ち物A 青色LED
+LED1_RED  = 25  # 持ち物A 赤色LED
+LED2_BLUE = 8   # 持ち物B 青色LED
+LED2_RED  = 7   # 持ち物B 赤色LED
 BUZZER_PIN = 9
 
 # --- ⚙️ 動作パラメータ ---
@@ -20,11 +20,15 @@ def setup_gpio():
     """GPIOの初期設定を行う"""
     global _gpio_is_setup
     if not _gpio_is_setup:
+        # BCMモード、警告表示なしを設定
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
+        
+        # すべてのピンを出力として設定し、LOW（消灯/オフ）にする
         for pin in [LED1_BLUE, LED1_RED, LED2_BLUE, LED2_RED, BUZZER_PIN]:
             GPIO.setup(pin, GPIO.OUT)
             GPIO.output(pin, GPIO.LOW)
+            
         _gpio_is_setup = True
         print("GPIO初期設定完了")
 
@@ -32,36 +36,25 @@ def cleanup_gpio():
     """GPIO設定を解放する"""
     global _gpio_is_setup
     if _gpio_is_setup:
+        # cleanup前に、すべてのピンを安全のためLOWに戻す
+        for pin in [LED1_BLUE, LED1_RED, LED2_BLUE, LED2_RED, BUZZER_PIN]:
+            try:
+                GPIO.output(pin, GPIO.LOW)
+            except RuntimeError:
+                # すでにクリーンアップ済みのピンを操作しようとした場合を考慮
+                pass
+                
         GPIO.cleanup()
         _gpio_is_setup = False
-        # print("GPIOクリーンアップ完了") # main_loopで出力されるためここでは省略
+        # print("GPIOクリーンアップ完了") # メインループ側で出力
 
 # -------------------------------------------------------------
-# 🔽🔽🔽 新規追加関数 🔽🔽🔽
-
-def set_blue_led(pin: int, state: bool):
-    """
-    指定されたピンの青色LEDの状態を設定します。
-
-    :param pin: 制御する青色LEDのピン番号 (LED1_BLUE または LED2_BLUE)
-    :param state: True で点灯 (HIGH)、False で消灯 (LOW)
-    """
-    if not _gpio_is_setup:
-        print("Warning: GPIOが設定されていません。LED制御をスキップします。")
-        return
-    
-    # ピンが青色LEDであることを確認する（安全のため）
-    if pin not in [LED1_BLUE, LED2_BLUE]:
-        print(f"Error: ピン {pin} は青色LEDピンとして登録されていません。")
-        return
-
-    output_state = GPIO.HIGH if state else GPIO.LOW
-    GPIO.output(pin, output_state)
+# 🔽🔽🔽 新規追加されたLED制御関数 🔽🔽🔽
 
 def set_all_blue_leds(state: bool):
     """
-    すべての青色LEDを同時に指定された状態に設定します。
-    （main_loopからの点滅処理に使用することを想定）
+    すべての青色LED（LED1_BLUE, LED2_BLUE）を同時に指定された状態に設定します。
+    （メインループの点滅処理で使用することを想定）
 
     :param state: True で点灯 (HIGH)、False で消灯 (LOW)
     """
@@ -78,19 +71,33 @@ def set_all_blue_leds(state: bool):
 
 def buzzer_warning():
     """不足がある間はぴぴぴを鳴らす"""
-    # ... (既存のコード) ...
+    if not _gpio_is_setup:
+        return
+        
     for _ in range(3):
         GPIO.output(BUZZER_PIN, GPIO.HIGH)
-        time.sleep(BUZZER_DURATION)
+        # time.sleepは非同期処理 (asyncio) とは独立しているため、
+        # メインループで呼び出す際は注意が必要です。
+        # 今回はメインループの async def main_loop から独立した
+        # buzzer_task 内で呼び出されるため問題ありません。
+        time.sleep(BUZZER_DURATION) 
         GPIO.output(BUZZER_PIN, GPIO.LOW)
         time.sleep(BUZZER_INTERVAL)
 
 def update_status(beacons, target_ids):
     """検知したら青点灯・赤消灯。未検知なら赤点灯"""
+    if not _gpio_is_setup:
+        return
+
     found_ids = [b["id"].lower() for b in beacons]
+    
+    # ターゲットIDが2つあることを前提とする
+    if len(target_ids) < 2:
+        return 
+
     t0, t1 = target_ids[0].lower(), target_ids[1].lower()
 
-    # 持ち物A
+    # 持ち物A (t0) の状態更新
     if t0 in found_ids:
         GPIO.output(LED1_BLUE, GPIO.HIGH)
         GPIO.output(LED1_RED, GPIO.LOW)
@@ -98,7 +105,7 @@ def update_status(beacons, target_ids):
         GPIO.output(LED1_BLUE, GPIO.LOW)
         GPIO.output(LED1_RED, GPIO.HIGH)
 
-    # 持ち物B
+    # 持ち物B (t1) の状態更新
     if t1 in found_ids:
         GPIO.output(LED2_BLUE, GPIO.HIGH)
         GPIO.output(LED2_RED, GPIO.LOW)
@@ -106,13 +113,6 @@ def update_status(beacons, target_ids):
         GPIO.output(LED2_BLUE, GPIO.LOW)
         GPIO.output(LED2_RED, GPIO.HIGH)
 
-    # 両方揃っているか
-    if t0 in found_ids and t1 in found_ids:
-        GPIO.output(BUZZER_PIN, GPIO.LOW)
-    else:
-        # Note: buzzer_warningはメインループ（buzzer_task）から呼び出されるため、
-        # ここではブザー制御は行わない方がメインロジックと衝突しない安全な設計ですが、
-        # 既存のコードに従い残しています。
-        # 修正後の main_loop のロジックでは buzzer_task がブザーを制御するため、
-        # この else 節の buzzer_warning() はコメントアウトすることが推奨されます。
-        pass # buzzer_warning()
+    # Note: メインのasyncioループでは buzzer_task がブザーを制御するため、
+    # ここでのブザー制御（GPIO.output(BUZZER_PIN, ...) や buzzer_warning()）は
+    # 競合を避けるために省略しています。
