@@ -78,7 +78,7 @@ async def main_loop(target_ids):
 
             if not beacons:
                 now_str = datetime.datetime.now().strftime('%H:%M:%S')
-                print(f"{now_str} ⚠️ 持ち物が見つかンりませんでした")
+                print(f"{now_str} ⚠️ 持ち物が見つかりませんでした")
                 with open(LOG_FILE, "a") as f:
                     f.write(f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | 検知なし\n")
                 gpio.update_status([], target_ids)
