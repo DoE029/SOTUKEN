@@ -10,7 +10,7 @@ BUZZER_PIN = 9
 
 # --- ⚙️ 動作パラメータ ---
 BUZZER_DURATION = 0.2
-BUZZER_INTERVAL = 0.1
+BUZZER_INTERVAL = 1.2
 
 # --- ⚙️ GPIOセットアップフラグ ---
 _gpio_is_setup = False
