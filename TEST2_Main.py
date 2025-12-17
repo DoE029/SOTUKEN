@@ -38,12 +38,16 @@ def update_and_log(beacons, target_ids):
 async def buzzer_task(target_ids):
     """不足がある間は一定間隔で鳴らす常駐タスク"""
     while True:
-        # 初期状態（まだスキャン結果なし）は鳴らさない
+        # ✅ 修正点: latest_beacons が None の間は、ブザーを鳴らさない。
+        # 最初のスキャンが完了し、latest_beacons が [] またはタグリストに更新されるまで待つ。
         if latest_beacons is not None:
+            
             found_ids = [b["id"].lower() for b in latest_beacons]
+            
             # 不足がある場合にブザーを鳴らす
             if not all(t.lower() in found_ids for t in target_ids):
                 gpio.buzzer_warning()
+            
         try:
             # タスクがキャンセルされた場合に備えて await を try-except に入れる
             await asyncio.sleep(2)  # 2秒ごとにチェック
