@@ -51,7 +51,7 @@ async def buzzer_task(target_ids):
             
         try:
             # タスクがキャンセルされた場合に備えて await を try-except に入れる
-            await asyncio.sleep(2) # 2秒ごとにチェック
+            await asyncio.sleep(1) # 2秒ごとにチェック
         except asyncio.CancelledError:
             # キャンセルされたらループを抜ける
             print("ブザー警告停止。")
