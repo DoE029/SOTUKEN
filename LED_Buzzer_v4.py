@@ -9,7 +9,7 @@ LED2_RED  = 7   # 持ち物B 赤色LED
 BUZZER_PIN = 9
 
 # --- ⚙️ 動作パラメータ ---
-BUZZER_DURATION = 0.8
+BUZZER_DURATION = 0.5
 BUZZER_INTERVAL = 1.0
 
 # --- ⚙️ GPIOセットアップフラグ ---
