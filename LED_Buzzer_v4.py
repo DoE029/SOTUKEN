@@ -9,8 +9,8 @@ LED2_RED  = 7   # 持ち物B 赤色LED
 BUZZER_PIN = 9
 
 # --- ⚙️ 動作パラメータ ---
-BUZZER_DURATION = 0.5
-BUZZER_INTERVAL = 1.0
+BUZZER_DURATION = 0.2
+BUZZER_INTERVAL = 0.05
 
 # --- ⚙️ GPIOセットアップフラグ ---
 _gpio_is_setup = False
@@ -114,5 +114,4 @@ def update_status(beacons, target_ids):
         GPIO.output(LED2_RED, GPIO.HIGH)
 
     # Note: メインのasyncioループでは buzzer_task がブザーを制御するため、
-    # ここでのブザー制御（GPIO.output(BUZZER_PIN, ...) や buzzer_warning()）は
-    # 競合を避けるために省略しています。
+    # ここでのブザー制御（GPIO.output(BUZZER_PIN, ...) や buzzer_warning()）は競合を避けるために省略しています。
