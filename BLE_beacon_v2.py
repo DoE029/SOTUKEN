@@ -1,9 +1,9 @@
 import asyncio
 from bleak import BleakScanner
 
-async def scan_beacon(timeout=2, target_ids=None):
+async def scan_beacon(timeout=3, target_ids=None):
     """BLEビーコンをスキャンする処理"""
-    print(f"{timeout}秒スキャンを開始")
+    print("持ち物を探してます...")
     devices = await BleakScanner.discover(timeout=timeout)
     beacons = []
 

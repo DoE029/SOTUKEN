@@ -48,7 +48,7 @@ async def buzzer_task(target_ids):
             await asyncio.sleep(2)  # 2秒ごとにチェック
         except asyncio.CancelledError:
             # キャンセルされたらループを抜ける
-            print("ブザー警告タスクを停止します。")
+            print("ブザー警告停止。")
             break
 
 async def main_loop(target_ids):
@@ -81,7 +81,7 @@ async def main_loop(target_ids):
             # 🔼🔼🔼 メインループ処理（スキャン、判定など） 🔼🔼🔼
             
             if all_found:
-                print(f"{datetime.datetime.now().strftime('%H:%M:%S')} ✨ 全部揃いました。点滅シーケンスへ移行します。")
+                print(f"{datetime.datetime.now().strftime('%H:%M:%S')} ✨ 全部揃いました。行ってらっしゃい！。")
                 
                 # 1. ブザー警告タスクを即座に停止
                 if buzzer_handle:
@@ -122,7 +122,6 @@ async def main_loop(target_ids):
                 
         gpio.cleanup_gpio()
         
-        print("GPIOクリーンアップ完了")
         print("システムを終了します")
 
 if __name__ == "__main__":
