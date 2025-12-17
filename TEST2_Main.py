@@ -68,7 +68,7 @@ async def main_loop(target_ids):
             # 🔽🔽🔽 メインループ処理（スキャン、判定など） 🔽🔽🔽
             try:
                 # 8秒に1回スキャン（2秒スキャン＋6秒休止）
-                beacons = await scan_beacon(timeout=1, target_ids=target_ids)
+                beacons = await scan_beacon(timeout=3, target_ids=target_ids)
             except Exception as e:
                 now_str = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 print(f"{now_str} ⚠️ スキャンで例外発生: {e}")
