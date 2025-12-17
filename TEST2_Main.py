@@ -38,20 +38,15 @@ def update_and_log(beacons, target_ids):
 async def buzzer_task(target_ids):
     """不足がある間は一定間隔で鳴らす常駐タスク"""
     while True:
-        # ✅ 修正点: latest_beacons が None であれば、空リスト [] として扱う。
-        # これにより、システム起動直後の initial scan の結果を待たずに、
-        # 最初から「不足状態」と判定され、ブザーが鳴り始める。
-        current_beacons = latest_beacons if latest_beacons is not None else []
-        
-        found_ids = [b["id"].lower() for b in current_beacons]
-        
-        # 不足がある場合にブザーを鳴らす
-        if not all(t.lower() in found_ids for t in target_ids):
-            gpio.buzzer_warning()
-            
+        # 初期状態（まだスキャン結果なし）は鳴らさない
+        if latest_beacons is not None:
+            found_ids = [b["id"].lower() for b in latest_beacons]
+            # 不足がある場合にブザーを鳴らす
+            if not all(t.lower() in found_ids for t in target_ids):
+                gpio.buzzer_warning()
         try:
             # タスクがキャンセルされた場合に備えて await を try-except に入れる
-            await asyncio.sleep(2) # 2秒ごとにチェック
+            await asyncio.sleep(2)  # 2秒ごとにチェック
         except asyncio.CancelledError:
             # キャンセルされたらループを抜ける
             print("ブザー警告停止。")
