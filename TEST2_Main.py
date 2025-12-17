@@ -28,9 +28,9 @@ def update_and_log(beacons, target_ids):
     all_found = all(t.lower() in found_ids for t in target_ids)
 
     if all_found:
-        print(f"{timestamp} ✅ 全部揃いました -> 終了準備へ")
+        print(f"{timestamp}  忘れ物なし！ ")
     else:
-        print(f"{timestamp} ⚠️ 不足があります")
+        print(f"{timestamp} ⚠️ 忘れ物があります！ ")
     
     return all_found # 全部揃ったかどうかを返す
 
@@ -61,7 +61,7 @@ async def main_loop(target_ids):
             # 🔽🔽🔽 メインループ処理（スキャン、判定など） 🔽🔽🔽
             try:
                 # 8秒に1回スキャン（2秒スキャン＋6秒休止）
-                beacons = await scan_beacon(timeout=2, target_ids=target_ids)
+                beacons = await scan_beacon(timeout=3, target_ids=target_ids)
             except Exception as e:
                 now_str = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 print(f"{now_str} ⚠️ スキャンで例外発生: {e}")
@@ -71,7 +71,7 @@ async def main_loop(target_ids):
 
             if not beacons:
                 now_str = datetime.datetime.now().strftime('%H:%M:%S')
-                print(f"{now_str} ⚠️ ビーコンが見つかりませんでした")
+                print(f"{now_str} ⚠️ 持ち物が見つかンりませんでした")
                 with open(LOG_FILE, "a") as f:
                     f.write(f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | 検知なし\n")
                 gpio.update_status([], target_ids)
@@ -81,7 +81,7 @@ async def main_loop(target_ids):
             # 🔼🔼🔼 メインループ処理（スキャン、判定など） 🔼🔼🔼
             
             if all_found:
-                print(f"{datetime.datetime.now().strftime('%H:%M:%S')} ✨ 全部揃いました。行ってらっしゃい！。")
+                print(f"{datetime.datetime.now().strftime('%H:%M:%S')}全部揃いました。行ってらっしゃい！。")
                 
                 # 1. ブザー警告タスクを即座に停止
                 if buzzer_handle:
