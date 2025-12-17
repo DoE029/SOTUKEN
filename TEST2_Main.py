@@ -114,7 +114,7 @@ async def main_loop(target_ids):
                 # 3. メインループを抜ける
                 break # 終了へ
             
-            await asyncio.sleep(6) # スキャン時間(2秒)と合わせて合計8秒周期
+            await asyncio.sleep(3) # スキャン時間(2秒)と合わせて合計8秒周期
 
     except KeyboardInterrupt:
         # 手動終了のメッセージ
