@@ -15,6 +15,14 @@ def update_and_log(beacons, target_ids):
     global latest_beacons
     latest_beacons = beacons 
 
+    # ✅ 検知されたすべてのタグのRSSIを表示
+    print(f"\n--- 📡 現在の電波強度 (目標: {RSSI_THRESHOLD}dBm以上) ---")
+    for b in beacons:
+        rssi_val = b.get("rssi")
+        rssi_display = f"{rssi_val}dBm" if rssi_val is not None else "取得不可"
+        status = "✅ OK" if rssi_val is not None and rssi_val >= RSSI_THRESHOLD else "❌ 遠い/未検知"
+        print(f"  ID: {b['id'].upper()} | RSSI: {rssi_display} | {status}")
+
     # RSSIが None でないことを確認してから比較
     found_ids_near = [
         b["id"].lower() for b in beacons 
@@ -22,14 +30,6 @@ def update_and_log(beacons, target_ids):
     ]
 
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
-    # ✅ 「近くにある」と判定されたIDを表示
-    if found_ids_near:
-        print(f"--- 近くで検知されたID ({RSSI_THRESHOLD}dBm以上) ---")
-        for fid in found_ids_near:
-            print(f"  [検知中]: {fid}")
-    else:
-        print(f"⚠️ {RSSI_THRESHOLD}dBm 以内にターゲットのビーコンはありません")
 
     with open(LOG_FILE, "a") as f:
         f.write(f"{timestamp} | 全検知: {beacons}\n")
@@ -39,9 +39,9 @@ def update_and_log(beacons, target_ids):
     all_found = all(t.lower() in found_ids_near for t in target_ids)
 
     if all_found:
-        print(f"{timestamp} ✨ 全て近くにあります！忘れ物なし！")
+        print(f"[{timestamp}] ✨ 全て近くにあります！忘れ物なし！")
     else:
-        print(f"{timestamp} ⚠️ 離れているか、見つからない物があります！")
+        print(f"[{timestamp}] ⚠️ 不足しているか、離れている物があります。")
     
     return all_found
 
@@ -67,30 +67,26 @@ async def main_loop(target_ids):
     gpio.setup_gpio()
     buzzer_handle = asyncio.create_task(buzzer_task(target_ids))
     
-    print("🔍 スキャンを開始します...")
+    print(f"🔍 スキャンを開始します... (しきい値: {RSSI_THRESHOLD})")
     try:
         while True:
             try:
                 # 3秒間スキャン
                 beacons = await scan_beacon(timeout=3, target_ids=target_ids)
             except Exception as e:
-                print(f"❌ スキャン中にエラーが発生しました: {e}")
+                print(f"❌ スキャンエラー: {e}")
                 beacons = [] 
 
-            # ✅ スキャン結果自体の表示（IDが取得できたかどうかのチェック）
             if beacons:
-                found_all_ids = [b["id"].upper() for b in beacons]
-                print(f"\n📡 ビーコンを検知しました: {', '.join(found_all_ids)}")
                 all_found = update_and_log(beacons, target_ids)
             else:
                 now_str = datetime.datetime.now().strftime('%H:%M:%S')
-                # ✅ 取得できなかった場合の表示
-                print(f"\n{now_str} ⚠️ ビーコンが一つも見つかりませんでした（範囲外または電源OFF）")
+                print(f"\n{now_str} ⚠️ ビーコンが見つかりません (範囲外)")
                 gpio.update_status([], target_ids, RSSI_THRESHOLD)
                 all_found = False
             
             if all_found:
-                print(f"{datetime.datetime.now().strftime('%H:%M:%S')} 全部揃いました。終了します。")
+                print(f"\n{datetime.datetime.now().strftime('%H:%M:%S')} 全部揃いました！")
                 if buzzer_handle:
                     buzzer_handle.cancel()
                 
