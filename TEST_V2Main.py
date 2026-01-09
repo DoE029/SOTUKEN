@@ -9,7 +9,7 @@ LOG_FILE = "beacon_log.txt"
 latest_near_beacons = None
 
 # ★ 距離判定のしきい値（ここを調整）
-NEAR_RSSI_THRESHOLD = -60   # -55〜-65 の間で調整すると良い
+NEAR_RSSI_THRESHOLD = -70   # -55〜-65 の間で調整すると良い
 
 def update_and_log(beacons, target_ids):
     """
