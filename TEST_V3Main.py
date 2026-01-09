@@ -1,7 +1,7 @@
 import asyncio
 import datetime
 from BLE_beacon_v2 import scan_beacon
-import LED_Buzzer_v4 as gpio
+import LED_Buzzer_v5 as gpio
 
 LOG_FILE = "beacon_log.txt"
 
@@ -21,9 +21,10 @@ def update_and_log(beacons, target_ids):
     latest_beacons = beacons 
 
     # ✅ 指定IDのタグが「しきい値以上の強さ(＝近く)」で存在するかチェック
+    # ✅ rssi が None ではないことを確認する判定を追加
     found_ids_near = [
         b["id"].lower() for b in beacons 
-        if b["rssi"] >= RSSI_THRESHOLD
+        if b.get("rssi") is not None and b["rssi"] >= RSSI_THRESHOLD
     ]
 
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -53,7 +54,7 @@ async def buzzer_task(target_ids):
             # 近くにあるタグだけを抽出
             found_ids_near = [
                 b["id"].lower() for b in latest_beacons 
-                if b["rssi"] >= RSSI_THRESHOLD
+                if b.get("rssi") is not None and b["rssi"] >= RSSI_THRESHOLD
             ]
             
             # ターゲットが近くに揃っていなければブザーを鳴らす

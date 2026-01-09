@@ -85,22 +85,22 @@ def buzzer_warning():
         time.sleep(BUZZER_INTERVAL)
 
 def update_status(beacons, target_ids, rssi_threshold):
-    """検知したら青点灯・赤消灯。未検知なら赤点灯"""
     if not _gpio_is_setup:
         return
 
+    # ✅ ここを修正：rssi が None ではないことを確認する判定を追加
     found_ids = [
         b["id"].lower() for b in beacons 
-        if b["rssi"] >= rssi_threshold  # ✅ RSSIをチェックする
+        if b.get("rssi") is not None and b["rssi"] >= rssi_threshold
     ]
     
-    # ターゲットIDが2つあることを前提とする
+    # ...（以下の判定ロジックは変更なし）...
     if len(target_ids) < 2:
         return 
 
     t0, t1 = target_ids[0].lower(), target_ids[1].lower()
 
-    # 持ち物A (t0) の状態更新
+    # 持ち物Aの判定
     if t0 in found_ids:
         GPIO.output(LED1_BLUE, GPIO.HIGH)
         GPIO.output(LED1_RED, GPIO.LOW)
@@ -108,13 +108,10 @@ def update_status(beacons, target_ids, rssi_threshold):
         GPIO.output(LED1_BLUE, GPIO.LOW)
         GPIO.output(LED1_RED, GPIO.HIGH)
 
-    # 持ち物B (t1) の状態更新
+    # 持ち物Bの判定
     if t1 in found_ids:
         GPIO.output(LED2_BLUE, GPIO.HIGH)
         GPIO.output(LED2_RED, GPIO.LOW)
     else:
         GPIO.output(LED2_BLUE, GPIO.LOW)
         GPIO.output(LED2_RED, GPIO.HIGH)
-
-    # Note: メインのasyncioループでは buzzer_task がブザーを制御するため、
-    # ここでのブザー制御（GPIO.output(BUZZER_PIN, ...) や buzzer_warning()）は競合を避けるために省略しています。
