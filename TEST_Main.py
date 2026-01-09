@@ -10,8 +10,8 @@ latest_beacons = None  # ← 初期は None にして「未確定」扱い
 
 def update_and_log(beacons, target_ids):
     """
-    検知状態を更新し、ログに記録し、GPIOを制御します。
-    :return: target_idsがすべて揃った場合に True を返します。
+    検知状態を更新し、ログに記録し、GPIOを制御。
+    :return: target_idsがすべて揃った場合に True を返す。
     """
     global latest_beacons
     latest_beacons = beacons  # 状態を保存
