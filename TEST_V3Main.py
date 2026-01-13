@@ -22,7 +22,7 @@ def update_and_log(beacons, target_ids):
     global latest_beacons
     latest_beacons = beacons 
 
-    print(f"\n--- 📡 現在の状況 (目標: {RSSI_THRESHOLD}dBm以上) ---")
+    print(f"現在の状況 (目標: {RSSI_THRESHOLD}dBm以上)")
     for b in beacons:
         raw_id = b['id'].lower()
         # 辞書から「1」や「2」を取得。なければIDを表示
@@ -53,7 +53,7 @@ def update_and_log(beacons, target_ids):
     else:
         # 不足している番号を具体的に表示
         missing = [ID_MAP.get(t.lower(), t) for t in target_ids if t.lower() not in found_ids_near]
-        print(f"⚠️ 不足中: {missing}")
+        print(f" 不足中: {missing}")
     
     return all_found
 
@@ -84,7 +84,7 @@ async def main_loop(target_ids):
     gpio.setup_gpio()
     buzzer_handle = asyncio.create_task(buzzer_task(target_ids))
     
-    print(f" スキャンを開始します... (しきい値: {RSSI_THRESHOLD})")
+    print(f" スキャンを開始 (しきい値: {RSSI_THRESHOLD})")
     try:
         while True:
             try:
@@ -98,7 +98,7 @@ async def main_loop(target_ids):
                 all_found = update_and_log(beacons, target_ids)
             else:
                 now_str = datetime.datetime.now().strftime('%H:%M:%S')
-                print(f"\n{now_str} ビーコンが見つかりません (範囲外)")
+                print(f"\n{now_str} 持ち物が見つかりません (範囲外)")
                 gpio.update_status([], target_ids, RSSI_THRESHOLD)
                 all_found = False
             
