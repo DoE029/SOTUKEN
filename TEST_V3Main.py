@@ -20,7 +20,7 @@ def update_and_log(beacons, target_ids):
     for b in beacons:
         rssi_val = b.get("rssi")
         rssi_display = f"{rssi_val}dBm" if rssi_val is not None else "取得不可"
-        status = " OK" if rssi_val is not None and rssi_val >= RSSI_THRESHOLD else "遠い/未検知"
+        status = "OK" if rssi_val is not None and rssi_val >= RSSI_THRESHOLD else "遠い/未検知"
         print(f"  ID: {b['id'].upper()} | RSSI: {rssi_display} | {status}")
 
     # RSSIが None でないことを確認してから比較
