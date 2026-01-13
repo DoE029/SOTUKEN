@@ -17,29 +17,30 @@ RSSI_THRESHOLD = -70
 # 最新の検知状態を保持
 latest_beacons = None 
 
+
 def update_and_log(beacons, target_ids):
     global latest_beacons
     latest_beacons = beacons 
 
-    # 検知されたすべてのタグのRSSIを表示
-    print(f"\n---  現在の電波強度 (目標: {RSSI_THRESHOLD}dBm以上) ---")
+    print(f"\n--- 📡 現在の状況 (目標: {RSSI_THRESHOLD}dBm以上) ---")
     for b in beacons:
         raw_id = b['id'].lower()
-        # 辞書にあれば番号を、なければそのままのIDを表示
+        # 辞書から「1」や「2」を取得。なければIDを表示
         display_name = ID_MAP.get(raw_id, raw_id.upper())
+        
         rssi_val = b.get("rssi")
         rssi_display = f"{rssi_val}dBm" if rssi_val is not None else "取得不可"
-        status = "OK" if rssi_val is not None and rssi_val >= RSSI_THRESHOLD else "遠い/未検知"
-        print(f"  ID: {b['id'].upper()} | RSSI: {rssi_display} | {status}")
+        status = " OK" if rssi_val is not None and rssi_val >= RSSI_THRESHOLD else "遠い/未検知"
+        
+        # ここを display_name に変更
+        print(f"  番号: {display_name} | RSSI: {rssi_display} | {status}")
 
-    # RSSIが None でないことを確認してから比較
     found_ids_near = [
         b["id"].lower() for b in beacons 
         if b.get("rssi") is not None and b["rssi"] >= RSSI_THRESHOLD
     ]
 
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
     with open(LOG_FILE, "a") as f:
         f.write(f"{timestamp} | 全検知: {beacons}\n")
 
@@ -48,11 +49,11 @@ def update_and_log(beacons, target_ids):
     all_found = all(t.lower() in found_ids_near for t in target_ids)
 
     if all_found:
-        print("全て近くにあります！忘れ物なし！")
+        print(" 全て近くにあります！忘れ物なし！")
     else:
-        # ここでも番号で表示すると分かりやすくなります
+        # 不足している番号を具体的に表示
         missing = [ID_MAP.get(t.lower(), t) for t in target_ids if t.lower() not in found_ids_near]
-        print("不足しているか、離れている物があります。")
+        print(f"⚠️ 不足中: {missing}")
     
     return all_found
 
