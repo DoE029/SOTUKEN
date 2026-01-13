@@ -20,7 +20,7 @@ def update_and_log(beacons, target_ids):
     for b in beacons:
         rssi_val = b.get("rssi")
         rssi_display = f"{rssi_val}dBm" if rssi_val is not None else "取得不可"
-        status = "✅ OK" if rssi_val is not None and rssi_val >= RSSI_THRESHOLD else "❌ 遠い/未検知"
+        status = " OK" if rssi_val is not None and rssi_val >= RSSI_THRESHOLD else "遠い/未検知"
         print(f"  ID: {b['id'].upper()} | RSSI: {rssi_display} | {status}")
 
     # RSSIが None でないことを確認してから比較
@@ -39,9 +39,9 @@ def update_and_log(beacons, target_ids):
     all_found = all(t.lower() in found_ids_near for t in target_ids)
 
     if all_found:
-        print(f"[{timestamp}] ✨ 全て近くにあります！忘れ物なし！")
+        print("全て近くにあります！忘れ物なし！")
     else:
-        print(f"[{timestamp}] ⚠️ 不足しているか、離れている物があります。")
+        print("不足しているか、離れている物があります。")
     
     return all_found
 
