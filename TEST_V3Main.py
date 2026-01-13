@@ -61,14 +61,19 @@ def update_and_log(beacons, target_ids):
 async def buzzer_task(target_ids):
     """不足がある間は一定間隔で鳴らす常駐タスク"""
     while True:
-        if latest_beacons is not None:
-            found_ids_near = [
-                b["id"].lower() for b in latest_beacons 
-                if b.get("rssi") is not None and b["rssi"] >= RSSI_THRESHOLD
-            ]
-            
-            if not all(t.lower() in found_ids_near for t in target_ids):
-                gpio.buzzer_warning()
+        # latest_beacons が None（まだ一度もスキャンできていない）か、
+        # 中身が空（範囲内に何もない）の場合を考慮する
+        current_beacons = latest_beacons if latest_beacons is not None else []
+        
+        # 近くにあるタグのIDリストを作成
+        found_ids_near = [
+            b["id"].lower() for b in current_beacons 
+            if b.get("rssi") is not None and b["rssi"] >= RSSI_THRESHOLD
+        ]
+        
+        # ターゲットが一つでも見つかっていない、またはRSSIが低い場合は警告
+        if not all(t.lower() in found_ids_near for t in target_ids):
+            gpio.buzzer_warning()
         
         try:
             await asyncio.sleep(1) 
