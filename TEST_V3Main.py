@@ -5,7 +5,13 @@ import LED_Buzzer_v5 as gpio
 
 LOG_FILE = "beacon_log.txt"
 
-# --- ⚙️ 距離設定 ---
+# MACアドレスと表示名の対応表
+ID_MAP = {
+    "dc:0d:30:16:88:8b": "1",
+    "dc:0d:30:16:87:f1": "2"
+}
+
+# --- 距離設定 ---
 RSSI_THRESHOLD = -70 
 
 # 最新の検知状態を保持
@@ -15,9 +21,12 @@ def update_and_log(beacons, target_ids):
     global latest_beacons
     latest_beacons = beacons 
 
-    # ✅ 検知されたすべてのタグのRSSIを表示
-    print(f"\n--- 📡 現在の電波強度 (目標: {RSSI_THRESHOLD}dBm以上) ---")
+    # 検知されたすべてのタグのRSSIを表示
+    print(f"\n---  現在の電波強度 (目標: {RSSI_THRESHOLD}dBm以上) ---")
     for b in beacons:
+        raw_id = b['id'].lower()
+        # 辞書にあれば番号を、なければそのままのIDを表示
+        display_name = ID_MAP.get(raw_id, raw_id.upper())
         rssi_val = b.get("rssi")
         rssi_display = f"{rssi_val}dBm" if rssi_val is not None else "取得不可"
         status = "OK" if rssi_val is not None and rssi_val >= RSSI_THRESHOLD else "遠い/未検知"
@@ -41,6 +50,8 @@ def update_and_log(beacons, target_ids):
     if all_found:
         print("全て近くにあります！忘れ物なし！")
     else:
+        # ここでも番号で表示すると分かりやすくなります
+        missing = [ID_MAP.get(t.lower(), t) for t in target_ids if t.lower() not in found_ids_near]
         print("不足しているか、離れている物があります。")
     
     return all_found
@@ -67,21 +78,21 @@ async def main_loop(target_ids):
     gpio.setup_gpio()
     buzzer_handle = asyncio.create_task(buzzer_task(target_ids))
     
-    print(f"🔍 スキャンを開始します... (しきい値: {RSSI_THRESHOLD})")
+    print(f" スキャンを開始します... (しきい値: {RSSI_THRESHOLD})")
     try:
         while True:
             try:
                 # 3秒間スキャン
                 beacons = await scan_beacon(timeout=3, target_ids=target_ids)
             except Exception as e:
-                print(f"❌ スキャンエラー: {e}")
+                print(f" スキャンエラー: {e}")
                 beacons = [] 
 
             if beacons:
                 all_found = update_and_log(beacons, target_ids)
             else:
                 now_str = datetime.datetime.now().strftime('%H:%M:%S')
-                print(f"\n{now_str} ⚠️ ビーコンが見つかりません (範囲外)")
+                print(f"\n{now_str} ビーコンが見つかりません (範囲外)")
                 gpio.update_status([], target_ids, RSSI_THRESHOLD)
                 all_found = False
             
