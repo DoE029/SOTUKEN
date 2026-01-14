@@ -6,7 +6,7 @@ from BLE_beacon_v3 import scan_beacon
 import LED_Buzzer_v5 as gpio
 
 # --- ⚙️ 設定項目 ---
-SCHEDULED_TIME = "09:29"  # 毎日この時間になったら実行
+SCHEDULED_TIME = "09:33"  # 毎日この時間になったら実行
 RSSI_THRESHOLD = -70 
 LOG_FILE = "beacon_log.txt"
 STATS_FILE = "forget_stats.json" # アプリ表示用の統計データ
@@ -37,15 +37,18 @@ def record_stats(missing_names):
         json.dump(stats, f, indent=4)
 
 async def wait_until_time(target_time_str):
-    """指定の時間までループして待機する"""
+    """指定の時間まで待機する（分単位で一致すれば開始）"""
     print(f"⏰ {target_time_str} になるまで待機します...")
     while True:
-        now = datetime.datetime.now().strftime("%H:%M")
-        if now == target_time_str:
-            print(f"🔔 時間になりました！({now})。チェックを開始します。")
+        now = datetime.datetime.now()
+        current_time = now.strftime("%H:%M") # 現在の「時:分」
+        
+        if current_time == target_time_str:
+            print(f"🔔 時間になりました！({current_time})。チェックを開始します。")
             break
-        # 30秒ごとに時刻をチェック
-        await asyncio.sleep(30)
+            
+        # 10秒ごとにチェック（精度を上げました）
+        await asyncio.sleep(5)
 
 def update_and_log(beacons, target_ids):
     global latest_beacons
