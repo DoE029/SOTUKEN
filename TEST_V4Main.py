@@ -6,7 +6,7 @@ from BLE_beacon_v3 import scan_beacon
 import LED_Buzzer_v5 as gpio
 
 # --- ⚙️ 設定項目 ---
-SCHEDULED_TIME = "09:35"  # 毎日この時間になったら実行
+SCHEDULED_TIME = "09:40"  # 毎日この時間になったら実行
 RSSI_THRESHOLD = -70 
 LOG_FILE = "beacon_log.txt"
 STATS_FILE = "forget_stats.json" # アプリ表示用の統計データ
@@ -38,13 +38,13 @@ def record_stats(missing_names):
 
 async def wait_until_time(target_time_str):
     """指定の時間まで待機する（分単位で一致すれば開始）"""
-    print(f"⏰ {target_time_str} になるまで待機します...")
+    print(f"  {target_time_str} になるまで待機します...")
     while True:
         now = datetime.datetime.now()
         current_time = now.strftime("%H:%M") # 現在の「時:分」
         
         if current_time == target_time_str:
-            print(f"🔔 時間になりました！({current_time})。チェックを開始します。")
+            print(f"  時間になりました！({current_time})。チェックを開始します。")
             break
             
         # 10秒ごとにチェック（精度を上げました）
@@ -54,7 +54,7 @@ def update_and_log(beacons, target_ids):
     global latest_beacons
     latest_beacons = beacons 
 
-    print(f"\n--- 📡 現在の状況 (目標: {RSSI_THRESHOLD}dBm以上) ---")
+    print(f"\n--- 現在の状況 (目標: {RSSI_THRESHOLD}dBm以上) ---")
     for b in beacons:
         # 取得したIDを大文字に変換して照合
         raw_id = b['id'].upper()
@@ -80,11 +80,11 @@ def update_and_log(beacons, target_ids):
     all_found = all(t.upper() in found_ids_near for t in target_ids)
 
     if all_found:
-        print("✅ 全て近くにあります！忘れ物なし！")
+        print(" 全て近くにあります！忘れ物なし！")
     else:
         # 不足している番号を表示
         missing_names = [ID_MAP.get(t.upper(), t) for t in target_ids if t.upper() not in found_ids_near]
-        print(f"⚠️ 不足中: {missing_names}")
+        print(f" 不足中: {missing_names}")
         # アプリ用に統計を記録
         record_stats(missing_names)
     
@@ -109,32 +109,32 @@ async def buzzer_task(target_ids):
             break
 
 async def main_loop(target_ids):
-    # 🌟 指定時刻まで待機する処理を追加
+    # 指定時刻まで待機する処理を追加
     await wait_until_time(SCHEDULED_TIME)
 
     gpio.setup_gpio()
     buzzer_handle = asyncio.create_task(buzzer_task(target_ids))
     
-    print(f"🔍 スキャンを開始 (しきい値: {RSSI_THRESHOLD})")
+    print(f" スキャンを開始 (しきい値: {RSSI_THRESHOLD})")
     try:
         while True:
             try:
                 beacons = await scan_beacon(timeout=3, target_ids=target_ids)
             except Exception as e:
-                print(f"❌ スキャンエラー: {e}")
+                print(f" スキャンエラー: {e}")
                 beacons = [] 
 
             if beacons:
                 all_found = update_and_log(beacons, target_ids)
             else:
                 now_str = datetime.datetime.now().strftime('%H:%M:%S')
-                print(f"\n{now_str} ⚠️ 持ち物が見つかりません (範囲外)")
+                print(f"\n{now_str}  持ち物が見つかりません (範囲外)")
                 latest_beacons = [] # 検知なしとして更新
                 gpio.update_status([], target_ids, RSSI_THRESHOLD)
                 all_found = False
             
             if all_found:
-                print(f"\n{datetime.datetime.now().strftime('%H:%M:%S')} 🎉 全部揃いました！")
+                print(f"\n{datetime.datetime.now().strftime('%H:%M:%S')}  全部揃いました！")
                 if buzzer_handle:
                     buzzer_handle.cancel()
                 
