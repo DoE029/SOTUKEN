@@ -38,13 +38,13 @@ def record_stats(missing_names):
 
 async def wait_until_time(target_time_str):
     """指定の時間まで待機する（分単位で一致すれば開始）"""
-    print(f"  {target_time_str} になるまで待機します...")
+    print(f"{target_time_str} になるまで待機します...")
     while True:
         now = datetime.datetime.now()
         current_time = now.strftime("%H:%M") # 現在の「時:分」
         
         if current_time == target_time_str:
-            print(f"  時間になりました！({current_time})。チェックを開始します。")
+            print(f"時間になりました！({current_time})。チェックを開始します。")
             break
             
         # 10秒ごとにチェック（精度を上げました）
@@ -80,11 +80,11 @@ def update_and_log(beacons, target_ids):
     all_found = all(t.upper() in found_ids_near for t in target_ids)
 
     if all_found:
-        print(" 全て近くにあります！忘れ物なし！")
+        print("全て近くにあります！忘れ物なし！")
     else:
         # 不足している番号を表示
         missing_names = [ID_MAP.get(t.upper(), t) for t in target_ids if t.upper() not in found_ids_near]
-        print(f" 不足中: {missing_names}")
+        print(f"  不足中: {missing_names}")
         # アプリ用に統計を記録
         record_stats(missing_names)
     
