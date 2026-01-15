@@ -155,14 +155,8 @@ async def main_loop(target_ids):
         gpio.cleanup_gpio()
         print("システムを終了します")
 
-if __name__ == "__main__":
-    # ターゲットも大文字で指定
-    targets = ["dc:0d:30:16:88:8b", "dc:0d:30:16:87:f1"]
-    asyncio.run(main_loop(targets))
 
-"""
 if __name__ == "__main__":
     # ターゲットも大文字で指定
     targets = ["DC:0D:30:16:88:8B", "DC:0D:30:16:87:F1"]
     asyncio.run(main_loop(targets))
-"""
