@@ -6,7 +6,7 @@ from BLE_beacon_v3 import scan_beacon
 import LED_Buzzer_v5 as gpio
 
 # --- ⚙️ 設定項目 ---
-SCHEDULED_TIME = "09:50"  # 毎日この時間になったら実行
+SCHEDULED_TIME = "11:50"  # 毎日この時間になったら実行
 RSSI_THRESHOLD = -70 
 LOG_FILE = "beacon_log.txt"
 STATS_FILE = "forget_stats.json" # アプリ表示用の統計データ
