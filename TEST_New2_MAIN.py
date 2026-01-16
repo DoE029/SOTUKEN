@@ -6,14 +6,14 @@ from BLE_New_beacon import scan_beacon
 import LED_New_Buzzer as gpio
 
 # ----------------- 設定 --------------------
-START_TIME = "07:00"   # チェック開始時刻
-END_TIME   = "08:00"   # チェック終了時刻
+START_TIME = "08:26"   # チェック開始時刻
+END_TIME   = "08:34"   # チェック終了時刻
 
-RSSI_THRESHOLD = -70
+RSSI_THRESHOLD = -70   #タグの検知範囲設定数値
 LOG_FILE = "beacon_log.txt"
 STATS_FILE = "forget_stats.json"
 
-# MACアドレスと表示名の対応表（大文字で統一）
+# MACアドレスと表示名の対応表
 ID_MAP = {"DC:0D:30:16:88:8B": "タグ 1",
           "DC:0D:30:16:87:F1": "タグ 2"}
 
@@ -90,7 +90,7 @@ def update_and_log(beacons, target_ids):
 
 
 async def buzzer_task(target_ids):
-    
+
     """不足がある間は一定間隔で鳴らすタスク"""
     while True:
         current_beacons = latest_beacons if latest_beacons is not None else []
@@ -163,7 +163,6 @@ async def main_loop(target_ids):
 
         gpio.cleanup_gpio()
         print("チェック時間帯を終了しました")
-
 
 if __name__ == "__main__":
     targets = ["DC:0D:30:16:88:8B", "DC:0D:30:16:87:F1"]
