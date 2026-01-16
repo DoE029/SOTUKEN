@@ -61,7 +61,7 @@ def update_and_log(beacons, target_ids):
         rssi_display = f"{rssi_val}dBm" if rssi_val is not None else "取得不可"
         status = "OK" if rssi_val is not None and rssi_val >= RSSI_THRESHOLD else "遠い/未検知"
 
-        print(f"  番号: {display_name} | RSSI: {rssi_display} | 状態: {status}")
+        print(f"番号: {display_name} | RSSI: {rssi_display} | 状態: {status}")
 
     found_ids_near = [
         b["id"].upper() for b in beacons
