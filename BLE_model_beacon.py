@@ -4,10 +4,14 @@ from bleak import BleakScanner
 async def scan_beacon(timeout=3, target_ids=None):
     """BLEビーコンをスキャンする処理"""
     print("持ち物を探してます...")
+
+
+
     devices = await BleakScanner.discover(timeout=timeout)
     beacons = []
 
     targets_lower = [addr.lower() for addr in target_ids] if target_ids else None
+
 
     for d in devices:
         # bleak バージョン差分に耐える RSSI 取得

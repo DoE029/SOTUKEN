@@ -91,6 +91,9 @@ def update_status(beacons, target_ids):
 
     found_ids = [b["id"].lower() for b in beacons]
     
+
+
+
     # ターゲットIDが2つあることを前提とする
     if len(target_ids) < 2:
         return 
