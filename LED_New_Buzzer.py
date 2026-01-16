@@ -85,10 +85,10 @@ def buzzer_warning():
         time.sleep(BUZZER_INTERVAL)
 
 def update_status(beacons, target_ids, rssi_threshold):
+
     if not _gpio_is_setup:
         return
-
-    # ✅ ここを修正：rssi が None ではないことを確認する判定を追加
+    #rssi(検知するときの数値) が None ではないことを確認する判定を追加
     found_ids = [
         b["id"].lower() for b in beacons 
         if b.get("rssi") is not None and b["rssi"] >= rssi_threshold
