@@ -6,8 +6,8 @@ from BLE_New_beacon import scan_beacon
 import LED_New_Buzzer as gpio
 
 # ----------------- 設定 --------------------
-START_TIME = "14:43"   # チェック開始時刻
-END_TIME   = "14:46"   # チェック終了時刻
+START_TIME = "9:42"   # チェック開始時刻
+END_TIME   = "9:44"   # チェック終了時刻
 
 RSSI_THRESHOLD = -70   #タグの検知範囲設定数値
 LOG_FILE = "beacon_log.txt"
