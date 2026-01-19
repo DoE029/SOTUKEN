@@ -2,8 +2,8 @@ import asyncio
 import datetime
 import json
 import os
-from BLE_beacon_v3 import scan_beacon
-import LED_Buzzer_v5 as gpio
+from BLE_New_beacon import scan_beacon
+import LED_New_Buzzer as gpio
 
 # --- ⚙️ 設定項目 ---
 SCHEDULED_TIME = "14:00"  # 毎日この時間になったら実行
