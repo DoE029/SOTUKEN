@@ -7,7 +7,7 @@ import LED_New_Buzzer as gpio
 
 # ----------------- 設定 --------------------
 START_TIME = "10:04"   # チェック開始時刻
-END_TIME   = "10:06"   # チェック終了時刻
+END_TIME   = "12:00"   # チェック終了時刻
 
 RSSI_THRESHOLD = -70   #タグの検知範囲設定数値
 LOG_FILE = "beacon_log.txt"
