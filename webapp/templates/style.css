@@ -1,0 +1,10 @@
+/* Webアプリ全体の基本デザイン */
+
+body {
+    font-family: sans-serif; /* 読みやすいフォント */
+    padding: 20px;           /* 画面の余白 */
+}
+
+h1 {
+    color: #2c7be5;          /* 青色のタイトル */
+}
