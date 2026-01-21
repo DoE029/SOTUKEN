@@ -1,21 +1,34 @@
-<!--
-    Webアプリの最初の画面（トップページ）
-    Flask の render_template() で読み込まれる
--->
+<!-- templates/index.html -->
 
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>忘れ物検知機器</title>
+    <title>忘れ物探知アプリ</title>
 
     <!-- static フォルダの style.css を読み込む -->
     <link rel="stylesheet" href="/static/style.css">
 </head>
 
 <body>
-    <h1>忘れ物検知 Webアプリ</h1>
+    <h1>忘れ物チェッカー Webアプリ</h1>
 
-    <p>ここにタグの状態やログを表示していく予定です。</p>
+    <!-- ここからタグ状態表示エリア -->
+    <section class="tag-status">
+        <h2>タグの状態</h2>
+
+        <!--
+            今はまだ MAIN.py とつないでいないので、
+            とりあえず「ダミーデータ（仮の情報）」を表示する。
+            あとでここを「本物のデータ」に差し替える。
+        -->
+        <ul>
+            <li>タグA：在室</li>
+            <li>タグB：不在</li>
+            <li>タグC：在室</li>
+        </ul>
+    </section>
+
+    <p>※ 今はテスト表示です。あとで MAIN.py と連携して本物の状態を表示します。</p>
 </body>
 </html>
