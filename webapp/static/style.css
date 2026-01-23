@@ -92,3 +92,13 @@ p {
     color: #78909c;
     font-size: 0.9rem;
 }
+
+.tag-status {
+    background-color: rgba(255, 255, 255, 0.95);
+    width: 90%;          /* スマホの時に横幅90%に広げる */
+    max-width: 450px;    /* PCなどの大きな画面では最大450pxに制限 */
+    padding: 25px;       /* 内側の余白を少し調整 */
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box; /* パディングを含めたサイズ計算にする（はみ出し防止） */
+}
