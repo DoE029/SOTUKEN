@@ -1,18 +1,18 @@
 import RPi.GPIO as GPIO
 import time
 
-# --- ⚙️ GPIOピン設定（BCM） ---
+# --- GPIOピン設定（BCM） ---
 LED1_BLUE = 11  # 持ち物A 青色LED
 LED1_RED  = 25  # 持ち物A 赤色LED
 LED2_BLUE = 8   # 持ち物B 青色LED
 LED2_RED  = 7   # 持ち物B 赤色LED
 BUZZER_PIN = 9
 
-# --- ⚙️ 動作パラメータ ---
+# --- 動作パラメータ ---
 BUZZER_DURATION = 0.2
 BUZZER_INTERVAL = 0.02
 
-# --- ⚙️ GPIOセットアップフラグ ---
+# --- GPIOセットアップフラグ ---
 _gpio_is_setup = False
 
 
@@ -49,7 +49,7 @@ def cleanup_gpio():
         # print("GPIOクリーンアップ完了") # メインループ側で出力
 
 # -------------------------------------------------------------
-# 🔽🔽🔽 新規追加されたLED制御関数 🔽🔽🔽
+# 新規追加されたLED制御関数 
 
 def set_all_blue_leds(state: bool):
     """

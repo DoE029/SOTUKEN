@@ -14,7 +14,7 @@ async def scan_beacon(timeout=3, target_ids=None):
 
     # devices_dict.values() には (BLEDevice, AdvertisementData) が入っています
     for d, adv in devices_dict.values():
-        # ✅ advertisement_data から直接 RSSI を取得
+        # advertisement_data から直接 RSSI を取得
         rssi = adv.rssi if adv else None
 
         # もし上記で取れなかった場合のバックアップ

@@ -38,7 +38,7 @@ def update_and_log(beacons, target_ids):
 async def buzzer_task(target_ids):
     """不足がある間は一定間隔で鳴らす常駐タスク"""
     while True:
-        # ✅ 修正点: latest_beacons が None であれば、空リスト [] として扱う。
+        # 修正点: latest_beacons が None であれば、空リスト [] として扱う。
         # これにより、システム起動直後の initial scan の結果を待たずに、
         # 最初から「不足状態」と判定され、ブザーが鳴り始める。
         current_beacons = latest_beacons if latest_beacons is not None else []
@@ -65,27 +65,27 @@ async def main_loop(target_ids):
     
     try:
         while True:
-            # 🔽🔽🔽 メインループ処理（スキャン、判定など） 🔽🔽🔽
+            # メインループ処理（スキャン、判定など）
             try:
                 # 8秒に1回スキャン（2秒スキャン＋6秒休止）
                 beacons = await scan_beacon(timeout=3, target_ids=target_ids)
             except Exception as e:
                 now_str = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                print(f"{now_str} ⚠️ スキャンで例外発生: {e}")
+                print(f"{now_str} スキャンで例外発生: {e}")
                 with open(LOG_FILE, "a") as f:
                     f.write(f"{now_str} | スキャン失敗: {e}\n")
                 beacons = [] 
 
             if not beacons:
                 now_str = datetime.datetime.now().strftime('%H:%M:%S')
-                print(f"{now_str} ⚠️ 持ち物が見つかりませんでした")
+                print(f"{now_str} 持ち物が見つかりませんでした")
                 with open(LOG_FILE, "a") as f:
                     f.write(f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | 検知なし\n")
                 gpio.update_status([], target_ids)
                 all_found = False
             else:
                 all_found = update_and_log(beacons, target_ids)
-            # 🔼🔼🔼 メインループ処理（スキャン、判定など） 🔼🔼🔼
+            # メインループ処理（スキャン、判定など）
             
             if all_found:
                 print(f"{datetime.datetime.now().strftime('%H:%M:%S')}全部揃いました。行ってらっしゃい！。")
@@ -109,7 +109,7 @@ async def main_loop(target_ids):
                     # Note: 青ランプをOFFにする処理は、
                     # finallyブロック内の gpio.cleanup_gpio() が実行時に自動で行います。
                 except AttributeError:
-                    print("⚠️ LED_Buzzer_v3に set_all_blue_leds 関数がないため点滅をスキップしました。")
+                    print(" LED_Buzzer_v3に set_all_blue_leds 関数がないため点滅をスキップしました。")
                 
                 # 3. メインループを抜ける
                 break # 終了へ
