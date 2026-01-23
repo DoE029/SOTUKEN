@@ -1,67 +1,94 @@
-/* 全体のリセットと背景 */
+/* 全体の設定 */
 body {
-    font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
-    background-color: #f4f7f9;
-    color: #333;
-    line-height: 1.6;
+    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    /* 爽やかなグラデーション背景 */
+    background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+    min-height: 100vh;
     margin: 0;
-    padding: 20px;
+    padding: 40px 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    color: #445;
 }
 
-/* メインタイトルの装飾 */
+/* タイトル */
 h1 {
-    color: #2c7be5;
-    font-size: 1.8rem;
-    margin-bottom: 20px;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+    color: #1a5ab1;
+    font-size: 2rem;
+    margin-bottom: 30px;
+    letter-spacing: 1px;
 }
 
-/* タグ状態表示エリア（カード） */
+/* メインカード */
 .tag-status {
-    background-color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.95);
     width: 100%;
-    max-width: 400px;
-    padding: 20px;
-    border: none;
-    border-radius: 15px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); /* 柔らかい影 */
+    max-width: 450px;
+    padding: 30px;
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); /* 深みのある影 */
+    backdrop-filter: blur(10px); /* ガラスのような質感 */
 }
 
 .tag-status h2 {
     margin-top: 0;
-    font-size: 1.2rem;
-    border-left: 5px solid #2c7be5; /* 左側にアクセントの線 */
-    padding-left: 10px;
-    margin-bottom: 20px;
+    font-size: 1.3rem;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 /* リストのデザイン */
 .tag-status ul {
-    list-style: none; /* 点を消す */
+    list-style: none;
     padding: 0;
     margin: 0;
 }
 
-/* リスト項目（1つ1つのタグ行） */
+/* リストの各項目 */
 .tag-status li {
-    background: #f8f9fa;
-    margin-bottom: 10px;
-    padding: 12px 15px;
-    border-radius: 10px;
+    background: #ffffff;
+    margin-bottom: 12px;
+    padding: 16px 20px;
+    border-radius: 16px;
     display: flex;
-    justify-content: space-between; /* 名前と状態を左右に分ける */
+    justify-content: space-between;
     align-items: center;
-    font-weight: bold;
-    border: 1px solid #eee;
+    border: 1px solid #f0f0f0;
+    transition: transform 0.2s, box-shadow 0.2s; /* 動きを滑らかに */
 }
 
-/* 注意書き（フッター） */
-p {
+/* マウスを乗せた時の動き */
+.tag-status li:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+/* ステータスバッジの共通設定 */
+.status {
+    padding: 4px 12px;
+    border-radius: 20px;
     font-size: 0.85rem;
-    color: #888;
-    margin-top: 20px;
-    text-align: center;
+    font-weight: bold;
+}
+
+/* 在室（緑） */
+.status.in {
+    background-color: #e6f9ed;
+    color: #1db954;
+}
+
+/* 不在（赤） */
+.status.out {
+    background-color: #ffeef0;
+    color: #fa5252;
+}
+
+/* 下部の注釈 */
+p {
+    margin-top: 25px;
+    color: #78909c;
+    font-size: 0.9rem;
 }
