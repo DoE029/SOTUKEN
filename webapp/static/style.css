@@ -1,0 +1,33 @@
+/* 既存のスタイル */
+
+body {
+    font-family: sans-serif;
+    padding: 20px;
+}
+
+h1 {
+    color: #2c7be5;
+}
+
+/* ここからタグ状態エリア用のスタイル */
+
+.tag-status {
+    margin-top: 20px;              /* 上に少し余白 */
+    padding: 10px 15px;            /* 内側の余白 */
+    border: 1px solid #ccc;        /* 枠線 */
+    border-radius: 8px;            /* 角を少し丸く */
+    background-color: #f9f9f9;     /* 薄いグレー背景 */
+}
+
+.tag-status h2 {
+    margin-top: 0;                 /* 上の余白を消す */
+    color: #333;
+}
+
+.tag-status ul {
+    padding-left: 20px;            /* 箇条書きのインデント */
+}
+
+.tag-status li {
+    margin-bottom: 5px;            /* 各行の間隔 */
+}
