@@ -3,7 +3,9 @@ import datetime
 import json
 import os
 from BLE_New_beacon import scan_beacon  
-import LED_New_Buzzer as gpio            
+import LED_New_Buzzer as gpio       
+import time  
+import os   
 
 # ----------------- 設定 --------------------
 
@@ -47,10 +49,22 @@ def save_status_for_web(beacons, target_ids):
             "class": "in" if is_near else "out"
         })
 
+    # status_dataに時刻を追加
+    status_payload = {
+        "last_update": time.time(), # 現在時刻を記録
+        "tags": status_data  #タグのリスト
+    }
+
     # ファイルに書き出し（Flask側が読み取れるように）
+    # 安全にファイルに書き出す（一時ファイル経由）
+    temp_file = STATUS_FILE + ".tmp"
     try:
-        with open(STATUS_FILE, "w", encoding="utf-8") as f:
-            json.dump(status_data, f, indent=4, ensure_ascii=False)
+        with open(temp_file, "w", encoding="utf-8") as f:
+            # status_data 単体ではなく、時刻入りの status_payload を保存する
+            json.dump(status_payload, f, indent=4, ensure_ascii=False)
+        
+        # 書き込みが終わったら一瞬で本番ファイルに置き換える
+        os.replace(temp_file, STATUS_FILE)
     except Exception as e:
         print(f"ステータス保存エラー: {e}")
 

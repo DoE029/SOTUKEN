@@ -3,6 +3,7 @@ import requests
 import json
 import os
 import random
+import time 
 
 app = Flask(__name__)
 
@@ -36,7 +37,7 @@ def get_omikuji():
     results = ["大吉", "中吉", "小吉", "吉", "末吉", "凶", "大凶"]
     # それぞれの出る確率（重み）を設定
     weights = [5, 15, 20, 20, 40, 30 ,10]   #重み付け
-    
+
     # 設定した確率に基づいて1つ選ぶ
     selection = random.choices(results, weights=weights, k=1)
     return selection[0]
@@ -51,15 +52,22 @@ def home():
     if os.path.exists(STATUS_FILE):
         try:
             with open(STATUS_FILE, "r", encoding="utf-8") as f:
-                tags_data = json.load(f)
+                full_data = json.load(f) # 全体（時刻＋タグ）を読み込む
+                
+                # 時刻チェック（15秒以上更新がなければ「停止中」にする）
+                last_update = full_data.get("last_update", 0)
+                if time.time() - last_update > 15:
+                    # メインが止まっているので、全てのタグを「通信切断」などの表示にする
+                    tags_data = [
+                        {"name": t["name"], "status": "通信切断", "class": "out"} 
+                        for t in full_data.get("tags", [])
+                    ]
+                else:
+                    # 正常ならタグのリストを取り出す
+                    tags_data = full_data.get("tags", [])
+                    
         except Exception as e:
             print(f"ファイル読み取りエラー: {e}")
-    
-    if not tags_data:
-        tags_data = [
-            {"name": "タグ 1", "status": "スキャン中...", "class": "out"},
-            {"name": "タグ 2", "status": "スキャン中...", "class": "out"}
-        ]
         
 
     return render_template("index.html", weather=current_weather, tags=tags_data, omikuji=omikuji_result)
