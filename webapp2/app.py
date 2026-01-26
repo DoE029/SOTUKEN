@@ -49,7 +49,7 @@ def home():
     omikuji_result = get_omikuji() #おみくじを引く
     
     tags_data = []
-    refresh_interval = 2  # デフォルト（スキャン中）は2秒
+    is_finished = False  # デフォルトは False
 
     if os.path.exists(STATUS_FILE):
         try:
@@ -59,6 +59,7 @@ def home():
                 # 時刻チェック（15秒以上更新がなければ「停止中」にする）
                 last_update = full_data.get("last_update", 0)
                 is_finished = full_data.get("is_finished", False) # 終了フラグを読み取る
+                
                 # 「15秒以上更新なし」かつ「正常終了フラグが立っていない」場合のみ通信切断
                 if (time.time() - last_update > 15) and not is_finished:
                     tags_data = [
@@ -69,18 +70,13 @@ def home():
                     # 正常ならタグのリストを取り出す
                     tags_data = full_data.get("tags", [])
 
-                    # 全て揃って終了フラグがTrueなら、更新間隔を60秒にする
-                    if is_finished:
-                        refresh_interval = 60
-                    else:
-                        refresh_interval = 2 # まだ揃っていないなら2秒
                     
         except Exception as e:
             print(f"ファイル読み取りエラー: {e}")
         
 
     return render_template("index.html", weather=current_weather, tags=tags_data, 
-                           omikuji=omikuji_result, interval=refresh_interval)
+                           omikuji=omikuji_result, is_finished=is_finished)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
