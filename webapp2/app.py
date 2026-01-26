@@ -14,7 +14,7 @@ def get_weather():
     try:
         # 新潟県（150000）の予報を取得
         url = "https://www.jma.go.jp/bosai/forecast/data/forecast/150000.json"
-        response = requests.get(url, timeout=5)
+        response = requests.get(url, timeout=3)
         data = response.json()
         
         # 新潟県下越地方（新潟市含む）の天気情報を抽出
