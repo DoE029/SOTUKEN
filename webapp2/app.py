@@ -49,6 +49,8 @@ def home():
     omikuji_result = get_omikuji() #おみくじを引く
     
     tags_data = []
+    refresh_interval = 2  # デフォルト（スキャン中）は2秒
+
     if os.path.exists(STATUS_FILE):
         try:
             with open(STATUS_FILE, "r", encoding="utf-8") as f:
@@ -66,12 +68,19 @@ def home():
                 else:
                     # 正常ならタグのリストを取り出す
                     tags_data = full_data.get("tags", [])
+
+                    # 全て揃って終了フラグがTrueなら、更新間隔を60秒にする
+                    if is_finished:
+                        refresh_interval = 60
+                    else:
+                        refresh_interval = 2 # まだ揃っていないなら2秒
                     
         except Exception as e:
             print(f"ファイル読み取りエラー: {e}")
         
 
-    return render_template("index.html", weather=current_weather, tags=tags_data, omikuji=omikuji_result)
+    return render_template("index.html", weather=current_weather, tags=tags_data, 
+                           omikuji=omikuji_result, interval=refresh_interval)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
