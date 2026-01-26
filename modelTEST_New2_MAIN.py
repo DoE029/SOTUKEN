@@ -116,8 +116,8 @@ def update_and_log(beacons, target_ids):
 
     print(f"--- 現在の状況 (しきい値: {RSSI_THRESHOLD}dBm) ---")
 
-    # Webアプリ用のデータを更新（ここに追加！）
-    save_status_for_web(beacons, target_ids)
+    # Webアプリ用のデータを更新（スキャン中なので is_finished=False）
+    save_status_for_web(beacons, target_ids, is_finished=False)
 
     # 取得したタグごとに状態を表示
     for b in beacons:
@@ -227,6 +227,8 @@ async def main_loop(target_ids):
                 print(f"{now_str} 持ち物が見つかりません (範囲外)")
 
                 latest_beacons = []
+                # ここでも False を送って「プログラムは生きてるよ」と伝える
+                save_status_for_web([], target_ids, is_finished=False)
                 gpio.update_status([], target_ids, RSSI_THRESHOLD)
                 all_found = False
 
