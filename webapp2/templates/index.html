@@ -1,0 +1,47 @@
+<!-- templates/index.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>忘れ物探知アプリ</title>
+
+    <!-- static フォルダの style.css を読み込む -->
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+
+<body>
+    <h1>忘れ物探知 Webアプリ</h1>
+
+    <!-- ここからタグ状態表示エリア -->
+    <section class="tag-status">
+        <h2>タグの状態</h2>
+
+        <!--
+            今はまだ MAIN.py とつないでいないので、
+            とりあえず「ダミーデータ（仮の情報）」を表示する。
+            あとでここを「本物のデータ」に差し替える。
+        -->
+        <ul>
+            <li>
+                <span>タグA</span>
+                <span class="status in">検知</span>
+            </li>
+            <li>
+                <span>タグB</span>
+                <span class="status out">未検知</span>
+            </li>
+        </ul>
+        <!--
+        <ul>
+            <li>タグA <span>在室</span></li>
+            <li>タグB <span style="color: #e74c3c;">不在</span></li>
+            <li>タグC <span>在室</span></li>
+        </ul>
+        -->
+    </section>
+
+    <p>※ 今はテスト表示です。あとで MAIN.py と連携して本物の状態を表示します。</p>
+</body>
+</html>
