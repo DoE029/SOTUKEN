@@ -5,7 +5,7 @@ import os
 
 app = Flask(__name__)
 
-STATUS_FILE = "tag_status.json"
+STATUS_FILE = "../tag_status.json"
 
 # ---------------------------------------------------------
 # 新潟市の天気予報を取得する関数
