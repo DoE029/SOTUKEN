@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="5">
     <title>忘れ物探知アプリ</title>
+
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
@@ -11,24 +13,29 @@
     <h1>忘れ物探知 Webアプリ</h1>
 
     <div class="weather-card">
-        <span class="weather-icon">🌾</span> 
+        <span class="weather-icon">japan</span>
         <span class="weather-text">新潟市の天気: <strong>{{ weather }}</strong></span>
     </div>
 
     <section class="tag-status">
-        <h2>🏷 タグの状態</h2>
+        <h2>タグの状態</h2>
+
         <ul>
+            {% for tag in tags %}
             <li>
-                <span>タグA</span>
-                <span class="status in">検知</span>
+                <span>{{ tag.name }}</span>
+                <span class="status {{ tag.class }}">{{ tag.status }}</span>
             </li>
-            <li>
-                <span>タグB</span>
-                <span class="status out">未検知</span>
-            </li>
+            {% endfor %}
         </ul>
     </section>
 
-    <p>※ 現在はテスト表示です。MAIN.pyと連携準備中。</p>
+    {% if "雨" in weather or "雪" in weather %}
+    <div style="margin-top: 20px; padding: 10px; background-color: #ffeef0; color: #fa5252; border-radius: 10px; font-weight: bold; font-size: 0.9rem;">
+        外は{{ weather }}です。傘を忘れずに！
+    </div>
+    {% endif %}
+
+    <p>※ 5秒ごとに自動で最新の状態に更新されます</p>
 </body>
 </html>
