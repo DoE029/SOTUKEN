@@ -203,7 +203,8 @@ async def main_loop(target_ids):
     print("チェック時間帯に入りました。スキャンを開始します")
 
     gpio.setup_gpio()  # LED・ブザーのGPIO初期化
-
+    save_status_for_web([], target_ids, is_finished=False) # 終了フラグをfalseにする
+    
     # 不足がある間ブザーを鳴らすタスクを開始
     buzzer_handle = asyncio.create_task(buzzer_task(target_ids))
 
