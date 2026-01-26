@@ -138,3 +138,26 @@ p {
         justify-content: center;
     }
 }
+
+.omikuji-card {
+    background: #fffbe6; /* 優しい黄色 */
+    padding: 10px 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    border: 2px dashed #fadb14;
+    font-size: 0.9rem;
+    color: #856404;
+}
+
+.omikuji-result {
+    font-size: 1.2rem;
+    color: #e67e22;
+}
+
+/* 大吉の時だけキラキラさせる */
+.daikichi-style {
+    color: #ff4d4f;
+    font-size: 1.5rem;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    font-weight: bold;
+}

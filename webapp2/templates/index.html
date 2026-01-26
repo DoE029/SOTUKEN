@@ -37,5 +37,12 @@
     {% endif %}
 
     <p>※ 3秒ごとに自動で最新の状態に更新されます</p>
+
+    <div class="omikuji-card">
+        <span>今日の運勢：</span>
+        <strong class="omikuji-result {% if '大吉' in omikuji %}daikichi-style{% endif %}">
+            {{ omikuji }}
+        </strong>
+    </div>
 </body>
 </html>

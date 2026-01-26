@@ -2,6 +2,7 @@ from flask import Flask, render_template
 import requests
 import json
 import os
+import random
 
 app = Flask(__name__)
 
@@ -27,10 +28,24 @@ def get_weather():
     except Exception as e:
         print(f"天気取得エラー: {e}")
         return "取得エラー"
+    
+# ---------------------------------------------------------
+# おみくじの結果を決める関数[重み付け]
+# ---------------------------------------------------------
+def get_omikuji():
+    results = ["大吉", "中吉", "小吉", "吉", "末吉", "凶", "大凶"]
+    # それぞれの出る確率（重み）を設定
+    weights = [5, 15, 20, 20, 40, 30 ,10]   #重み付け
+    
+    # 設定した確率に基づいて1つ選ぶ
+    selection = random.choices(results, weights=weights, k=1)
+    return selection[0]
+
 
 @app.route("/")
 def home():
-    current_weather = get_weather()
+    current_weather = get_weather() #天気の表示
+    omikuji_result = get_omikuji() #おみくじを引く
     
     tags_data = []
     if os.path.exists(STATUS_FILE):
@@ -46,7 +61,8 @@ def home():
             {"name": "タグ 2", "status": "スキャン中...", "class": "out"}
         ]
         
-    return render_template("index.html", weather=current_weather, tags=tags_data)
+
+    return render_template("index.html", weather=current_weather, tags=tags_data, omikuji=omikuji_result)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
