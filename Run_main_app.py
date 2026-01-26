@@ -17,13 +17,13 @@ def start_system():
     print("ビーコンスキャンを開始します...")
     try:
         # main.pyを実行（これは終了するまでここで止まります）
-        main_process = subprocess.run([sys.executable, "WEB_MAIN"])
+        main_process = subprocess.run([sys.executable, "WEB_MAIN.py"])
     except KeyboardInterrupt:
         print("\n システムを終了します...")
     finally:
         # main.pyが終了、またはCtrl+Cが押されたらWebアプリも終了させる
         flask_process.terminate()
-        print("今日も行ってらっしょい！！")
+        print("今日も行ってらっしゃい！！")
 
 if __name__ == "__main__":
     start_system()
