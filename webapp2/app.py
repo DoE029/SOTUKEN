@@ -1,24 +1,28 @@
-# Flask を使った Web アプリの基本コード
-
 from flask import Flask, render_template
+import requests
 
-# Flask アプリ本体を作成
-# __name__ は「このファイルが実行されている場所」を Flask に教えるためのもの
 app = Flask(__name__)
 
-# -------------------------------
-# ルートURL（"/"）にアクセスしたときの処理
-# -------------------------------
+def get_weather():
+    try:
+        # 気象庁のAPI（例として東京都: 130000）から取得
+        url = "https://www.jma.go.jp/bosai/forecast/data/forecast/130000.json"
+        response = requests.get(url)
+        data = response.json()
+        
+        # 最初の予報エリアの情報を抽出
+        weather_text = data[0]['timeSeries'][0]['areas'][0]['weathers'][0]
+        # 簡略化（長すぎる場合があるため）
+        weather_simple = weather_text.split('　')[0] 
+        return weather_simple
+    except:
+        return "取得エラー"
+
 @app.route("/")
 def home():
-    # templates/index.html を表示する
-    return render_template("index.html")
+    weather = get_weather()
+    # 天気情報を index.html に渡す
+    return render_template("index.html", weather=weather)
 
-# -------------------------------
-# Flask アプリを起動する部分
-# -------------------------------
 if __name__ == "__main__":
-    # host="0.0.0.0" → 他の端末（スマホやPC）からもアクセス可能
-    # port=5000 → Webアプリのポート番号
-    # debug=True → コードを変更すると自動で再起動してくれる（開発中に便利）
     app.run(host="0.0.0.0", port=5000, debug=True)

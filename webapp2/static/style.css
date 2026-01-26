@@ -102,3 +102,39 @@ p {
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
     box-sizing: border-box; /* パディングを含めたサイズ計算にする（はみ出し防止） */
 }
+
+
+.weather-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(5px);
+    padding: 15px 25px;
+    border-radius: 50px; /* 丸いカプセル型 */
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.weather-icon {
+    font-size: 1.5rem;
+}
+
+.weather-text {
+    font-size: 1rem;
+    color: #445;
+}
+
+.weather-text strong {
+    color: #2c7be5;
+}
+
+/* スマホ対応：天気カードの幅調整 */
+@media (max-width: 480px) {
+    .weather-card {
+        width: 90%;
+        box-sizing: border-box;
+        justify-content: center;
+    }
+}

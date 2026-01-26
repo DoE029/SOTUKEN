@@ -1,28 +1,22 @@
-<!-- templates/index.html -->
-
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>忘れ物探知アプリ</title>
-
-    <!-- static フォルダの style.css を読み込む -->
-    <link rel="stylesheet" href="../static/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
     <h1>忘れ物探知 Webアプリ</h1>
 
-    <!-- ここからタグ状態表示エリア -->
-    <section class="tag-status">
-        <h2>タグの状態</h2>
+    <div class="weather-card">
+        <span class="weather-icon">☁️</span>
+        <span class="weather-text">今日の天気: <strong>{{ weather }}</strong></span>
+    </div>
 
-        <!--
-            今はまだ MAIN.py とつないでいないので、
-            とりあえず「ダミーデータ（仮の情報）」を表示する。
-            あとでここを「本物のデータ」に差し替える。
-        -->
+    <section class="tag-status">
+        <h2>🏷 タグの状態</h2>
         <ul>
             <li>
                 <span>タグA</span>
@@ -33,15 +27,8 @@
                 <span class="status out">未検知</span>
             </li>
         </ul>
-        <!--
-        <ul>
-            <li>タグA <span>在室</span></li>
-            <li>タグB <span style="color: #e74c3c;">不在</span></li>
-            <li>タグC <span>在室</span></li>
-        </ul>
-        -->
     </section>
 
-    <p>※ 今はテスト表示です。あとで MAIN.py と連携して本物の状態を表示します。</p>
+    <p>※ 現在はテスト表示です。MAIN.pyと連携準備中。</p>
 </body>
 </html>
