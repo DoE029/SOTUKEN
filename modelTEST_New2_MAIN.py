@@ -27,7 +27,7 @@ latest_beacons = None
 # ---------------------------------------------------------
 # Webアプリ用に現在の状態を保存する関数
 # ---------------------------------------------------------
-def save_status_for_web(beacons, target_ids):
+def save_status_for_web(beacons, target_ids, is_finished=False):
     """Webアプリが読み取れるように現在の状態をJSONで保存する"""
     status_data = []
     
@@ -50,8 +50,10 @@ def save_status_for_web(beacons, target_ids):
         })
 
     # status_dataに時刻を追加
+    # 終了フラグを追加
     status_payload = {
         "last_update": time.time(), # 現在時刻を記録
+        "is_finished": is_finished,  # 終了フラグ
         "tags": status_data  #タグのリスト
     }
 
@@ -231,6 +233,8 @@ async def main_loop(target_ids):
             # 全部揃ったら終了
             if all_found:
                 print("全部揃いました")
+                #終了フラグを保存
+                save_status_for_web(beacons, target_ids, is_finished=True)
 
                 if buzzer_handle:
                     buzzer_handle.cancel()

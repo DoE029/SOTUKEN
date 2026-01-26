@@ -16,7 +16,7 @@ def get_weather():
     try:
         # 新潟県（150000）の予報を取得
         url = "https://www.jma.go.jp/bosai/forecast/data/forecast/150000.json"
-        response = requests.get(url, timeout=3)
+        response = requests.get(url, timeout=2)
         data = response.json()
         
         # 新潟県下越地方（新潟市含む）の天気情報を抽出
@@ -56,8 +56,9 @@ def home():
                 
                 # 時刻チェック（15秒以上更新がなければ「停止中」にする）
                 last_update = full_data.get("last_update", 0)
-                if time.time() - last_update > 15:
-                    # メインが止まっているので、全てのタグを「通信切断」などの表示にする
+                is_finished = full_data.get("is_finished", False) # 終了フラグを読み取る
+                # 「15秒以上更新なし」かつ「正常終了フラグが立っていない」場合のみ通信切断
+                if (time.time() - last_update > 15) and not is_finished:
                     tags_data = [
                         {"name": t["name"], "status": "通信切断", "class": "out"} 
                         for t in full_data.get("tags", [])
