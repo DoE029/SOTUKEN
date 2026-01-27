@@ -7,8 +7,8 @@ from datetime import datetime
 
 def start_system():
     # --- 設定：終了したい時間を指定（23時00分） ---
-    END_HOUR = 23
-    END_MINUTE = 0
+    END_HOUR = 9
+    END_MINUTE = 34
 
     STATUS_FILE = "tag_status.json"
     # ------------------------------------------
