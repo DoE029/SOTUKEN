@@ -2,16 +2,34 @@ import subprocess
 import time
 import sys
 import os
+import json
 from datetime import datetime
 
 def start_system():
     # --- 設定：終了したい時間を指定（23時00分） ---
     END_HOUR = 23
     END_MINUTE = 0
+
+    STATUS_FILE = "tag_status.json"
     # ------------------------------------------
 
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    
+
+    # 起動時に終了フラグを False に戻す
+    status_path = os.path.join(base_dir, STATUS_FILE)
+    if os.path.exists(status_path):
+        try:
+            with open(status_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            
+            # フラグをリセットして上書き保存
+            data["is_finished"] = False
+            with open(status_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=4, ensure_ascii=False)
+            print("前回の終了フラグをリセットしました（スキャン開始準備完了）")
+        except Exception as e:
+            print(f"リセットに失敗しました（初回起動などの場合）: {e}")
+
     print("忘れ物探知システムを起動しています...")
 
     # 1. Webアプリ (app.py) を起動
