@@ -196,6 +196,9 @@ async def main_loop(target_ids):
 
     print(f"{START_TIME} 〜 {END_TIME} の間だけチェックを行います")
 
+    save_status_for_web([], target_ids, is_finished=False) # 終了フラグをfalseにする
+    print("終了フラグをリセットしました。")
+
     # 時間帯に入るまで待機（ここが「朝起動して時間まで待つ」部分）
     while not in_time_range(START_TIME, END_TIME):
         await asyncio.sleep(10)
@@ -203,7 +206,6 @@ async def main_loop(target_ids):
     print("チェック時間帯に入りました。スキャンを開始します")
 
     gpio.setup_gpio()  # LED・ブザーのGPIO初期化
-    save_status_for_web([], target_ids, is_finished=False) # 終了フラグをfalseにする
     
     # 不足がある間ブザーを鳴らすタスクを開始
     buzzer_handle = asyncio.create_task(buzzer_task(target_ids))
