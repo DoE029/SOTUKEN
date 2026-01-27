@@ -12,7 +12,7 @@ import os
 START_TIME = "9:15"   # チェック開始時刻（この時間になるまで待機）
 END_TIME   = "15:00"  # チェック終了時刻（この時間を過ぎたら終了）
 
-RSSI_THRESHOLD = -70  # タグの検知とみなすRSSIのしきい値
+RSSI_THRESHOLD = -85  # タグの検知とみなすRSSIのしきい値
 LOG_FILE = "beacon_log.txt"        # スキャン結果のログ保存先
 STATS_FILE = "forget_stats.json"   # 忘れ物統計データの保存先
 STATUS_FILE = "tag_status.json"    # Webアプリ連携用ファイル
