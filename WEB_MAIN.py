@@ -16,6 +16,7 @@ RSSI_THRESHOLD = -84  # タグの検知とみなすRSSIのしきい値
 LOG_FILE = "beacon_log.txt"        # スキャン結果のログ保存先
 STATS_FILE = "forget_stats.json"   # 忘れ物統計データの保存先
 STATUS_FILE = "tag_status.json"    # Webアプリ連携用ファイル
+CONFIG_FILE = "config.json"        # webアプリ側で設定したSTART_TIMEとEND_TIMEの読み込み
 
 # MACアドレスと表示名の対応表（ログや表示用）
 ID_MAP = {"DC:0D:30:16:88:8B": "タグ 1",
@@ -264,6 +265,35 @@ async def main_loop(target_ids):
 
         gpio.cleanup_gpio()
         print("チェック時間帯を終了しました")
+
+
+# ---------------------------------------------------------
+# webアプリ側で入力した時間帯を確認するコード
+# ---------------------------------------------------------
+def get_current_config():
+    if os.path.exists(CONFIG_FILE):
+        with open(CONFIG_FILE, "r") as f:
+            return json.load(f)
+    return {"start_time": "09:15", "end_time": "15:00"}
+
+async def main_loop(target_ids):
+    # 最初のリセット
+    save_status_for_web([], target_ids, is_finished=False)
+    
+    while True: # 全体ループ
+        # 毎回最新の設定を読み込む
+        config = get_current_config()
+        st = config["start_time"]
+        et = config["end_time"]
+
+        if in_time_range(st, et):
+            print(f"チェック時間帯 ({st}〜{et}) です")
+            # ここに今のメイン処理（スキャンなど）を入れる
+            # ... 既存のスキャン処理 ...
+        else:
+            print(f"待機中... 次の開始時刻: {st}")
+            await asyncio.sleep(60) # 1分おきにチェック
+
 
 
 # ---------------------------------------------------------

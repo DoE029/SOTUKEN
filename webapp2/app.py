@@ -9,6 +9,8 @@ app = Flask(__name__)
 
 STATUS_FILE = "../tag_status.json"
 
+CONFIG_FILE = "../config.json"      # スキャン開始・終了時間
+
 # ---------------------------------------------------------
 # 新潟市の天気予報を取得する関数
 # ---------------------------------------------------------
@@ -42,6 +44,19 @@ def get_omikuji():
     selection = random.choices(results, weights=weights, k=1)
     return selection[0]
 
+# ---------------------------------------------------------
+# スキャン時間の設定時間の表示と変更
+# ---------------------------------------------------------
+def load_config():
+    if os.path.exists(CONFIG_FILE):
+        with open(CONFIG_FILE, "r") as f:
+            return json.load(f)
+    return {"start_time": "09:15", "end_time": "15:00"}
+
+def save_config(start_time, end_time):
+    with open(CONFIG_FILE, "w") as f:
+        json.dump({"start_time": start_time, "end_time": end_time}, f)
+
 
 @app.route("/")
 def home():
@@ -73,10 +88,23 @@ def home():
                     
         except Exception as e:
             print(f"ファイル読み取りエラー: {e}")
+    
+    config = load_config()
         
+    # webアプリ側に渡す
+    return render_template("index.html", weather=current_weather, 
+                           tags=tags_data, 
+                           omikuji=omikuji_result, 
+                           is_finished=is_finished, 
+                           config=config)
 
-    return render_template("index.html", weather=current_weather, tags=tags_data, 
-                           omikuji=omikuji_result, is_finished=is_finished)
+@app.route("/update_config", methods=["POST"])
+def update_config():
+    from flask import request, redirect
+    start = request.form.get("start_time")
+    end = request.form.get("end_time")
+    save_config(start, end)
+    return redirect("/")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
