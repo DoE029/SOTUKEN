@@ -6,7 +6,7 @@ import json
 from datetime import datetime
 
 def start_system():
-    # --- 設定：終了したい時間を指定（23時00分） ---
+    # --- 設定：終了したい時間を指定（22時00分） ---
     END_HOUR = 22
     END_MINUTE = 00
 
@@ -23,7 +23,7 @@ def start_system():
                 data = json.load(f)
             
             # フラグをリセットして上書き保存
-            data["is_finished"] = False
+            #data["is_finished"] = False
             with open(status_path, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=4, ensure_ascii=False)
             print("前回の終了フラグをリセットしました（スキャン開始準備完了）")

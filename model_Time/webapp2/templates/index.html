@@ -39,13 +39,22 @@
     </div>
     {% endif %}
 
-    <p>※ ２秒ごとに自動で最新の状態に更新されます</p>
+    <p>※ スキャン中は２秒ごとに自動で最新の状態に更新されます</p>
 
     <div class="omikuji-card">
         <span>今日の運勢：</span>
         <strong class="omikuji-result {% if '大吉' in omikuji %}daikichi-style{% endif %}">
             {{ omikuji }}
         </strong>
+    </div>
+
+    <div class="settings-card">
+        <h3>動作時間の計測設定</h3>
+        <form action="/update_config" method="post">
+            開始: <input type="time" name="start_time" value="{{ config.start_time }}">
+            終了: <input type="time" name="end_time" value="{{ config.end_time }}">
+            <button type="submit">設定保存</button>
+        </form>
     </div>
 </body>
 </html>

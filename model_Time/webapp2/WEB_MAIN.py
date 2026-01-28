@@ -12,10 +12,11 @@ import os
 START_TIME = "9:15"   # チェック開始時刻（この時間になるまで待機）
 END_TIME   = "15:00"  # チェック終了時刻（この時間を過ぎたら終了）
 
-RSSI_THRESHOLD = -70  # タグの検知とみなすRSSIのしきい値
+RSSI_THRESHOLD = -84  # タグの検知とみなすRSSIのしきい値
 LOG_FILE = "beacon_log.txt"        # スキャン結果のログ保存先
 STATS_FILE = "forget_stats.json"   # 忘れ物統計データの保存先
 STATUS_FILE = "tag_status.json"    # Webアプリ連携用ファイル
+CONFIG_FILE = "config.json"        # webアプリ側で設定したSTART_TIMEとEND_TIMEの読み込み
 
 # MACアドレスと表示名の対応表（ログや表示用）
 ID_MAP = {"DC:0D:30:16:88:8B": "タグ 1",
@@ -264,6 +265,100 @@ async def main_loop(target_ids):
 
         gpio.cleanup_gpio()
         print("チェック時間帯を終了しました")
+
+
+# ---------------------------------------------------------
+# webアプリ側で入力した時間帯を確認するコード
+# ---------------------------------------------------------
+def get_current_config():
+    """Webアプリが保存したconfig.jsonから時刻を読み込む"""
+    if os.path.exists(CONFIG_FILE):
+        try:
+            with open(CONFIG_FILE, "r") as f:
+                return json.load(f)
+        except:
+            pass
+    # ファイルがない、または読み込めない場合のデフォルト値
+    return {"start_time": "09:15", "end_time": "15:00"}
+
+async def main_loop(target_ids):
+    print("システムを開始しました。")
+    # 今日すでに完了したかを記録するフラグ
+    today_completed = False
+
+    while True:
+        # 1. 最新の設定を読み込む
+        config = get_current_config()
+        st = config["start_time"]
+        et = config["end_time"]
+
+        # 2. 時間外の場合
+        if not in_time_range(st, et):
+            # 時間外になったら、完了フラグをリセットして次の日に備える
+            if today_completed:
+                print("時間外になったため、完了フラグをリセットしました。明日に備えます。")
+                today_completed = False
+            
+            save_status_for_web([], target_ids, is_finished=False)
+            print(f"待機時間中です。次の開始予定: {st}")
+            await asyncio.sleep(60)
+            continue
+
+        # 3. 時間内だが、すでに今日一度完了している場合
+        if today_completed:
+            # 1分おきに「今日はもう終わりました」と出すだけにする（または表示もせず静かに待つ）
+            await asyncio.sleep(60)
+            continue
+
+        # 4. 【時間内、かつ未完了の場合のみ】スキャンを開始
+        print(f"チェック時間帯に入りました。スキャンを開始します。")
+        gpio.setup_gpio()
+        save_status_for_web([], target_ids, is_finished=False)
+        
+        buzzer_handle = asyncio.create_task(buzzer_task(target_ids))
+
+        try:
+            while in_time_range(st, et):
+                # スキャン実行
+                try:
+                    beacons = await scan_beacon(timeout=3, target_ids=target_ids)
+                except Exception as e:
+                    print(f"スキャンエラー: {e}")
+                    beacons = []
+
+                if beacons:
+                    all_found = update_and_log(beacons, target_ids)
+                else:
+                    save_status_for_web([], target_ids, is_finished=False)
+                    gpio.update_status([], target_ids, RSSI_THRESHOLD)
+                    all_found = False
+
+                # 全部揃った瞬間の処理
+                if all_found:
+                    print("全部揃いました。本日のスキャンを完了します。")
+                    save_status_for_web(beacons, target_ids, is_finished=True)
+                    
+                    if buzzer_handle: buzzer_handle.cancel()
+                    gpio.set_all_blue_leds(True)
+                    await asyncio.sleep(10) # 成功の青LEDを10秒見せる
+                    
+                    # 【重要】完了フラグを立てる
+                    today_completed = True
+                    break # スキャン用whileループを抜ける
+
+                await asyncio.sleep(3)
+
+        except KeyboardInterrupt:
+            print("手動終了")
+            break
+        finally:
+            if buzzer_handle and not buzzer_handle.done():
+                buzzer_handle.cancel()
+            gpio.cleanup_gpio()
+            print("スキャンセッションを終了しました。")
+            # 完了して抜けた場合も、未完了で時間外に抜けた場合も一旦10秒待機
+            await asyncio.sleep(10)
+
 
 
 # ---------------------------------------------------------

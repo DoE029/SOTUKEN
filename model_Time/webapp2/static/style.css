@@ -1,0 +1,163 @@
+/* 全体の設定 */
+body {
+    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    /* 爽やかなグラデーション背景 */
+    background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+    min-height: 100vh;
+    margin: 0;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #445;
+}
+
+/* タイトル */
+h1 {
+    color: #1a5ab1;
+    font-size: 2rem;
+    margin-bottom: 30px;
+    letter-spacing: 1px;
+}
+
+/* メインカード */
+.tag-status {
+    background-color: rgba(255, 255, 255, 0.95);
+    width: 100%;
+    max-width: 450px;
+    padding: 30px;
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); /* 深みのある影 */
+    backdrop-filter: blur(10px); /* ガラスのような質感 */
+}
+
+.tag-status h2 {
+    margin-top: 0;
+    font-size: 1.3rem;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* リストのデザイン */
+.tag-status ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* リストの各項目 */
+.tag-status li {
+    background: #ffffff;
+    margin-bottom: 12px;
+    padding: 16px 20px;
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #f0f0f0;
+    transition: transform 0.2s, box-shadow 0.2s; /* 動きを滑らかに */
+}
+
+/* マウスを乗せた時の動き */
+.tag-status li:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+/* ステータスバッジの共通設定 */
+.status {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: bold;
+}
+
+/* 在室（緑） */
+.status.in {
+    background-color: #e6f9ed;
+    color: #1db954;
+}
+
+/* 不在（赤） */
+.status.out {
+    background-color: #ffeef0;
+    color: #fa5252;
+}
+
+/* 下部の注釈 */
+p {
+    margin-top: 25px;
+    color: #78909c;
+    font-size: 0.9rem;
+}
+
+.tag-status {
+    background-color: rgba(255, 255, 255, 0.95);
+    width: 90%;          /* スマホの時に横幅90%に広げる */
+    max-width: 450px;    /* PCなどの大きな画面では最大450pxに制限 */
+    padding: 25px;       /* 内側の余白を少し調整 */
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box; /* パディングを含めたサイズ計算にする（はみ出し防止） */
+}
+
+
+.weather-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(5px);
+    padding: 15px 25px;
+    border-radius: 50px; /* 丸いカプセル型 */
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.weather-icon {
+    font-size: 1.5rem;
+}
+
+.weather-text {
+    font-size: 1rem;
+    color: #445;
+}
+
+.weather-text strong {
+    color: #2c7be5;
+}
+
+/* スマホ対応：天気カードの幅調整 */
+@media (max-width: 480px) {
+    .weather-card {
+        width: 90%;
+        box-sizing: border-box;
+        justify-content: center;
+    }
+}
+
+.omikuji-card {
+    background: #fffbe6; /* 優しい黄色 */
+    padding: 10px 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    border: 2px dashed #fadb14;
+    font-size: 0.9rem;
+    color: #856404;
+}
+
+.omikuji-result {
+    font-size: 1.2rem;
+    color: #e67e22;
+}
+
+/* 大吉の時だけキラキラさせる */
+.daikichi-style {
+    color: #ff4d4f;
+    font-size: 1.5rem;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    font-weight: bold;
+}
