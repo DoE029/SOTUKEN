@@ -1,47 +1,51 @@
-<!-- templates/index.html -->
-
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>忘れ物探知アプリ</title>
+    
+    {% if not is_finished %}
+    <meta http-equiv="refresh" content="2">
+    {% endif %}
 
-    <!-- static フォルダの style.css を読み込む -->
-    <link rel="stylesheet" href="../static/style.css">
+    <title>忘れ物探知アプリ</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
     <h1>忘れ物探知 Webアプリ</h1>
 
-    <!-- ここからタグ状態表示エリア -->
+    <div class="weather-card">
+        <span class="weather-icon">japan</span>
+        <span class="weather-text">新潟市の天気: <strong>{{ weather }}</strong></span>
+    </div>
+
     <section class="tag-status">
         <h2>タグの状態</h2>
 
-        <!--
-            今はまだ MAIN.py とつないでいないので、
-            とりあえず「ダミーデータ（仮の情報）」を表示する。
-            あとでここを「本物のデータ」に差し替える。
-        -->
         <ul>
+            {% for tag in tags %}
             <li>
-                <span>タグA</span>
-                <span class="status in">検知</span>
+                <span>{{ tag.name }}</span>
+                <span class="status {{ tag.class }}">{{ tag.status }}</span>
             </li>
-            <li>
-                <span>タグB</span>
-                <span class="status out">未検知</span>
-            </li>
+            {% endfor %}
         </ul>
-        <!--
-        <ul>
-            <li>タグA <span>在室</span></li>
-            <li>タグB <span style="color: #e74c3c;">不在</span></li>
-            <li>タグC <span>在室</span></li>
-        </ul>
-        -->
     </section>
 
-    <p>※ 今はテスト表示です。あとで MAIN.py と連携して本物の状態を表示します。</p>
+    {% if "雨" in weather or "雪" in weather %}
+    <div style="margin-top: 20px; padding: 10px; background-color: #ffeef0; color: #fa5252; border-radius: 10px; font-weight: bold; font-size: 0.9rem;">
+        外は{{ weather }}です。傘を忘れずに！
+    </div>
+    {% endif %}
+
+    <p>※ ２秒ごとに自動で最新の状態に更新されます</p>
+
+    <div class="omikuji-card">
+        <span>今日の運勢：</span>
+        <strong class="omikuji-result {% if '大吉' in omikuji %}daikichi-style{% endif %}">
+            {{ omikuji }}
+        </strong>
+    </div>
 </body>
 </html>
