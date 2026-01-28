@@ -283,39 +283,43 @@ def get_current_config():
 
 async def main_loop(target_ids):
     print("システムを開始しました。")
-    
+    # 今日すでに完了したかを記録するフラグ
+    today_completed = False
+
     while True:
-        # 1. ループのたびに最新の設定を読み込む
+        # 1. 最新の設定を読み込む
         config = get_current_config()
         st = config["start_time"]
         et = config["end_time"]
 
-        # 2. 時間外の場合は待機
+        # 2. 時間外の場合
         if not in_time_range(st, et):
-            # まだ時間前、または終了後の場合は、終了フラグをFalseにして待機
+            # 時間外になったら、完了フラグをリセットして次の日に備える
+            if today_completed:
+                print("時間外になったため、完了フラグをリセットしました。明日に備えます。")
+                today_completed = False
+            
             save_status_for_web([], target_ids, is_finished=False)
-            print(f"現在、待機時間中です。次の開始予定: {st}")
-            await asyncio.sleep(60)  # 1分待機して再度時刻をチェック
+            print(f"待機時間中です。次の開始予定: {st}")
+            await asyncio.sleep(60)
             continue
 
-        # 3. 【ここから時間内の処理】
-        print(f"チェック時間帯 ({st}〜{et}) に入りました。スキャンを開始します。")
+        # 3. 時間内だが、すでに今日一度完了している場合
+        if today_completed:
+            # 1分おきに「今日はもう終わりました」と出すだけにする（または表示もせず静かに待つ）
+            await asyncio.sleep(60)
+            continue
+
+        # 4. 【時間内、かつ未完了の場合のみ】スキャンを開始
+        print(f"チェック時間帯に入りました。スキャンを開始します。")
         gpio.setup_gpio()
-        
-        # 終了フラグをリセット
         save_status_for_web([], target_ids, is_finished=False)
         
-        # ブザータスク開始
         buzzer_handle = asyncio.create_task(buzzer_task(target_ids))
 
         try:
-            # 時間内である限りスキャンを続ける
             while in_time_range(st, et):
-                # 念のため、スキャン中も設定が更新されたか確認
-                config = get_current_config()
-                st = config["start_time"]
-                et = config["end_time"]
-
+                # スキャン実行
                 try:
                     beacons = await scan_beacon(timeout=3, target_ids=target_ids)
                 except Exception as e:
@@ -325,24 +329,24 @@ async def main_loop(target_ids):
                 if beacons:
                     all_found = update_and_log(beacons, target_ids)
                 else:
-                    print(f"{datetime.datetime.now().strftime('%H:%M:%S')} 範囲外")
                     save_status_for_web([], target_ids, is_finished=False)
                     gpio.update_status([], target_ids, RSSI_THRESHOLD)
                     all_found = False
 
+                # 全部揃った瞬間の処理
                 if all_found:
-                    print("全部揃いました。正常終了します。")
+                    print("全部揃いました。本日のスキャンを完了します。")
                     save_status_for_web(beacons, target_ids, is_finished=True)
-                    # ブザー停止とLED点灯
+                    
                     if buzzer_handle: buzzer_handle.cancel()
                     gpio.set_all_blue_leds(True)
+                    await asyncio.sleep(10) # 成功の青LEDを10秒見せる
                     
-                    # 全部揃った後は、次の開始時刻まで待機モードへ
-                    # ここで「内側のwhile」を抜けて「外側のwhile」の待機に戻る
-                    await asyncio.sleep(10) # 青LEDを見せる時間
-                    break # while in_time_range を抜ける
+                    # 【重要】完了フラグを立てる
+                    today_completed = True
+                    break # スキャン用whileループを抜ける
 
-                await asyncio.sleep(3) # スキャン間隔
+                await asyncio.sleep(3)
 
         except KeyboardInterrupt:
             print("手動終了")
@@ -351,11 +355,9 @@ async def main_loop(target_ids):
             if buzzer_handle and not buzzer_handle.done():
                 buzzer_handle.cancel()
             gpio.cleanup_gpio()
-            print("スキャンセッションを終了しました。次の開始時刻まで待機します。")
-            
-            # 全部揃って抜けた場合は、次の時間まで長めに待機
-            # そうしないと、まだ時間内の場合すぐにまたスキャンが始まってしまうため
-            await asyncio.sleep(60)
+            print("スキャンセッションを終了しました。")
+            # 完了して抜けた場合も、未完了で時間外に抜けた場合も一旦10秒待機
+            await asyncio.sleep(10)
 
 
 
