@@ -64,5 +64,10 @@ def start_system():
         flask_process.terminate()
         time.sleep(2)
 
+        #------------自動シャットダウン-------------
+        os.system("sudo shutdown -h now")
+
 if __name__ == "__main__":
     start_system()
+
+  
