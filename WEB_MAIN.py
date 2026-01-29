@@ -13,7 +13,7 @@ import random
 START_TIME = "9:15"   # チェック開始時刻（この時間になるまで待機）
 END_TIME   = "15:00"  # チェック終了時刻（この時間を過ぎたら終了）
 
-RSSI_THRESHOLD = -70  # タグの検知とみなすRSSIのしきい値
+RSSI_THRESHOLD = -85  # タグの検知とみなすRSSIのしきい値
 LOG_FILE = "beacon_log.txt"        # スキャン結果のログ保存先
 STATS_FILE = "forget_stats.json"   # 忘れ物統計データの保存先
 STATUS_FILE = "tag_status.json"    # Webアプリ連携用ファイル
@@ -25,6 +25,9 @@ ID_MAP = {"DC:0D:30:16:88:8B": "タグ 1",
 # 最新のスキャン結果を保持するための変数
 latest_beacons = None
 
+# 起動時に決定するおみくじ結果を保持するグローバル変数
+current_session_omikuji = None
+
 # ---------------------------------------------------------
 # Webアプリ用に現在の状態を保存する関数
 # ---------------------------------------------------------
@@ -32,14 +35,13 @@ def save_status_for_web(beacons, target_ids, is_finished=False):
     """Webアプリが読み取れるように現在の状態をJSONで保存する"""
 
     # 今保存されているおみくじ結果を読み込む
-    existing_omikuji = None
-    if os.path.exists(STATUS_FILE):
-        try:
-            with open(STATUS_FILE, "r", encoding="utf-8") as f:
-                old_data = json.load(f)
-                existing_omikuji = old_data.get("omikuji")
-        except:
-            pass
+    global current_session_omikuji
+
+    # 起動時にメインループでおみくじが引かれていない場合のバックアップ
+    if current_session_omikuji is None:
+        results = ["大吉", "中吉", "小吉", "吉", "末吉", "凶", "大凶"]
+        weights = [5, 15, 20, 20, 40, 30, 10]
+        current_session_omikuji = random.choices(results, weights=weights, k=1)[0]
     
     status_data = []
     
@@ -61,20 +63,12 @@ def save_status_for_web(beacons, target_ids, is_finished=False):
             "class": "in" if is_near else "out"
         })
 
-    # 3. おみくじがなければ引く、あればそのまま使う
-    # main.py でも random インポートを忘れずに！
-    if existing_omikuji is None:
-        # main.py側にもおみくじを引く関数をコピーするか、
-        # 単純にここで1回決める
-        results = ["大吉", "中吉", "小吉", "吉", "末吉", "凶", "大凶"]
-        existing_omikuji = random.choices(results, weights=[5, 15, 20, 20, 40, 30, 10])[0]
-
     # status_dataに時刻を追加
     # 終了フラグを追加
     status_payload = {
         "last_update": time.time(), # 現在時刻を記録
         "is_finished": is_finished,  # 終了フラグ
-        "omikuji": existing_omikuji,  # おみくじの結果を入れる
+        "omikuji": current_session_omikuji,  # おみくじの結果を入れる
         "tags": status_data  #タグのリスト
     }
 
@@ -215,6 +209,14 @@ async def buzzer_task(target_ids):
 # ---------------------------------------------------------
 async def main_loop(target_ids):
 
+    global current_session_omikuji
+    
+    # 1. 起動した瞬間に今日のおみくじを確定させる
+    results = ["大吉", "中吉", "小吉", "吉", "末吉", "凶", "大凶"]
+    weights = [5, 15, 20, 20, 40, 30, 10]
+    current_session_omikuji = random.choices(results, weights=weights, k=1)[0]
+    print(f"今日のおみくじを確定しました: {current_session_omikuji}")
+
     print(f"{START_TIME} 〜 {END_TIME} の間だけチェックを行います")
 
     save_status_for_web([], target_ids, is_finished=False) # 終了フラグをfalseにする
@@ -223,6 +225,8 @@ async def main_loop(target_ids):
     # 時間帯に入るまで待機（ここが「朝起動して時間まで待つ」部分）
     while not in_time_range(START_TIME, END_TIME):
         await asyncio.sleep(10)
+
+
 
     print("チェック時間帯に入りました。スキャンを開始します")
 
