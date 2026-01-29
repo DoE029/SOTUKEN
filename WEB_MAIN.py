@@ -8,15 +8,22 @@ import time
 import os   
 import random
 
+
+# ----------------- 絶対パス設定（systemd対応） -------------------- 
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__)) 
+
+STATUS_FILE = os.path.join(BASE_DIR, "tag_status.json")
+LOG_FILE = os.path.join(BASE_DIR, "beacon_log.txt") 
+STATS_FILE = os.path.join(BASE_DIR, "forget_stats.json")
+
 # ----------------- 設定 --------------------
 
 START_TIME = "9:15"   # チェック開始時刻（この時間になるまで待機）
 END_TIME   = "15:00"  # チェック終了時刻（この時間を過ぎたら終了）
 
 RSSI_THRESHOLD = -85  # タグの検知とみなすRSSIのしきい値
-LOG_FILE = "beacon_log.txt"        # スキャン結果のログ保存先
-STATS_FILE = "forget_stats.json"   # 忘れ物統計データの保存先
-STATUS_FILE = "tag_status.json"    # Webアプリ連携用ファイル
+
 
 # MACアドレスと表示名の対応表（ログや表示用）
 ID_MAP = {"DC:0D:30:16:88:8B": "タグ 1",

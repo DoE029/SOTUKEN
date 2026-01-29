@@ -6,23 +6,21 @@ import json
 from datetime import datetime
 
 def start_system():
-    # --- 設定：終了したい時間を指定（例：22時00分） ---
+    # --- 設定：終了したい時間を指定 ---
     END_HOUR = 22
     END_MINUTE = 0
 
-    STATUS_FILE = "tag_status.json"
-    # -----------------------------------------------------
-
-    base_dir = os.path.dirname(os.path.abspath(__file__))
+    # --- 絶対パス設定（systemd対応） ---
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    STATUS_FILE = os.path.join(BASE_DIR, "tag_status.json")
 
     # 起動時に終了フラグを False に戻す
-    status_path = os.path.join(base_dir, STATUS_FILE)
-    if os.path.exists(status_path):
+    if os.path.exists(STATUS_FILE):
         try:
-            with open(status_path, "r", encoding="utf-8") as f:
+            with open(STATUS_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
             data["is_finished"] = False
-            with open(status_path, "w", encoding="utf-8") as f:
+            with open(STATUS_FILE, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=4, ensure_ascii=False)
             print("前回の終了フラグをリセットしました（スキャン開始準備完了）")
         except Exception as e:
@@ -31,7 +29,7 @@ def start_system():
     print("忘れ物探知システムを起動しています...")
 
     # 1. Webアプリ (app.py) を起動
-    flask_dir = os.path.join(base_dir, "webapp")  # ← webapp2 ではなく webapp
+    flask_dir = os.path.join(BASE_DIR, "webapp")
     flask_process = subprocess.Popen(
         [sys.executable, "app.py"],
         cwd=flask_dir
@@ -43,11 +41,11 @@ def start_system():
     # 2. メインのスキャンプログラム (WEB_MAIN.py) を起動
     print("ビーコンスキャンを開始します...")
     try:
-        subprocess.run([sys.executable, "WEB_MAIN.py"], cwd=base_dir, check=True)
+        subprocess.run([sys.executable, "WEB_MAIN.py"], cwd=BASE_DIR, check=True)
 
         print(f"\nスキャン完了！ {END_HOUR:02d}:{END_MINUTE:02d} までWebアプリを維持します。")
 
-        # 3. 指定時刻まで待機
+        # 指定時刻まで待機
         while True:
             now = datetime.now()
 

@@ -7,7 +7,10 @@ import time
 
 app = Flask(__name__)
 
-STATUS_FILE = "../tag_status.json"
+# --- 絶対パス設定（systemd対応） --- 
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATUS_FILE = os.path.join(BASE_DIR, "..", "tag_status.json")
 
 # ---------------------------------------------------------
 # 新潟市の天気予報を取得する関数
