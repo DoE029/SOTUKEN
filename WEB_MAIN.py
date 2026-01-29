@@ -6,6 +6,7 @@ from BLE_New_beacon import scan_beacon
 import LED_New_Buzzer as gpio       
 import time  
 import os   
+import random
 
 # ----------------- 設定 --------------------
 
@@ -29,6 +30,17 @@ latest_beacons = None
 # ---------------------------------------------------------
 def save_status_for_web(beacons, target_ids, is_finished=False):
     """Webアプリが読み取れるように現在の状態をJSONで保存する"""
+
+    # 今保存されているおみくじ結果を読み込む
+    existing_omikuji = None
+    if os.path.exists(STATUS_FILE):
+        try:
+            with open(STATUS_FILE, "r", encoding="utf-8") as f:
+                old_data = json.load(f)
+                existing_omikuji = old_data.get("omikuji")
+        except:
+            pass
+    
     status_data = []
     
     # しきい値以上で検知できているタグのIDリスト（大文字統一）
@@ -49,11 +61,20 @@ def save_status_for_web(beacons, target_ids, is_finished=False):
             "class": "in" if is_near else "out"
         })
 
+    # 3. おみくじがなければ引く、あればそのまま使う
+    # main.py でも random インポートを忘れずに！
+    if existing_omikuji is None:
+        # main.py側にもおみくじを引く関数をコピーするか、
+        # 単純にここで1回決める
+        results = ["大吉", "中吉", "小吉", "吉", "末吉", "凶", "大凶"]
+        existing_omikuji = random.choices(results, weights=[5, 15, 20, 20, 40, 30, 10])[0]
+
     # status_dataに時刻を追加
     # 終了フラグを追加
     status_payload = {
         "last_update": time.time(), # 現在時刻を記録
         "is_finished": is_finished,  # 終了フラグ
+        "omikuji": existing_omikuji,  # おみくじの結果を入れる
         "tags": status_data  #タグのリスト
     }
 

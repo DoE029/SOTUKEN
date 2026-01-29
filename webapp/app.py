@@ -16,7 +16,7 @@ def get_weather():
     try:
         # 新潟県（150000）の予報を取得
         url = "https://www.jma.go.jp/bosai/forecast/data/forecast/150000.json"
-        response = requests.get(url, timeout=2)
+        response = requests.get(url, timeout=1)
         data = response.json()
         
         # 新潟県下越地方（新潟市含む）の天気情報を抽出
@@ -46,10 +46,10 @@ def get_omikuji():
 @app.route("/")
 def home():
     current_weather = get_weather() #天気の表示
-    omikuji_result = get_omikuji() #おみくじを引く
-    
+        
     tags_data = []
     is_finished = False  # デフォルトは False
+    omikuji_result = ''  #おみくじを初期化
 
     if os.path.exists(STATUS_FILE):
         try:
@@ -60,6 +60,15 @@ def home():
                 last_update = full_data.get("last_update", 0)
                 is_finished = full_data.get("is_finished", False) # 終了フラグを読み取る
                 
+                # --- おみくじの維持ロジック ---
+                # jsonの中にすでにおみくじの結果があればそれを使う
+                if "omikuji" in full_data:
+                    omikuji_result = full_data["omikuji"]
+                else:
+                    # なければ新しく引いて、変数に入れる（保存は後述）
+                    omikuji_result = get_omikuji()
+                # ----------------------------
+
                 # 「15秒以上更新なし」かつ「正常終了フラグが立っていない」場合のみ通信切断
                 if (time.time() - last_update > 15) and not is_finished:
                     tags_data = [
@@ -74,6 +83,9 @@ def home():
         except Exception as e:
             print(f"ファイル読み取りエラー: {e}")
         
+    # もし omikuji_result が空なら（ファイルがない場合など）引く
+    if not omikuji_result:
+        omikuji_result = get_omikuji()        
 
     return render_template("index.html", weather=current_weather, tags=tags_data, 
                            omikuji=omikuji_result, is_finished=is_finished)
