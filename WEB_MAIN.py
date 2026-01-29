@@ -252,7 +252,7 @@ async def main_loop(target_ids):
 
                 latest_beacons = []
                 # ここでも False を送って「プログラムは生きてるよ」と伝える
-                # !!!! save_status_for_web([], target_ids, is_finished=False)
+                save_status_for_web([], target_ids, is_finished=False)
                 gpio.update_status([], target_ids, RSSI_THRESHOLD)
                 all_found = False
 
