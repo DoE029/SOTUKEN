@@ -56,8 +56,7 @@ def home():
             with open(STATUS_FILE, "r", encoding="utf-8") as f:
                 full_data = json.load(f) # 全体（時刻＋タグ）を読み込む
                 
-                # 時刻チェック（15秒以上更新がなければ「停止中」にする）
-                last_update = full_data.get("last_update", 0)
+                #フラグ類の読み込み
                 is_finished = full_data.get("is_finished", False) # 終了フラグを読み取る
                 
                 # --- おみくじの維持ロジック ---
@@ -69,15 +68,9 @@ def home():
                     omikuji_result = get_omikuji()
                 # ----------------------------
 
-                # 「15秒以上更新なし」かつ「正常終了フラグが立っていない」場合のみ通信切断
-                if (time.time() - last_update > 15) and not is_finished:
-                    tags_data = [
-                        {"name": t["name"], "status": "通信切断", "class": "out"} 
-                        for t in full_data.get("tags", [])
-                    ]
-                else:
-                    # 正常ならタグのリストを取り出す
-                    tags_data = full_data.get("tags", [])
+                
+                # 正常ならタグのリストを取り出す
+                tags_data = full_data.get("tags", [])
 
                     
         except Exception as e:
