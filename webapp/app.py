@@ -16,7 +16,7 @@ STATUS_FILE = os.path.join(BASE_DIR, "..", "tag_status.json")
 # グラフを表示する
 # ---------------------------------------------------------
 
-@app.route("/log_graph")
+@app.route("/graph")
 def log_graph():
     # ダミーデータ（後で本物のログに差し替え可能）
     dummy_labels = ["月", "火", "水", "木", "金"]
