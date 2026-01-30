@@ -15,11 +15,9 @@
 <body>
     <h1>忘れ物探知 Webアプリ</h1>
 
-    
-
+    <!-- ① タグの状態 -->
     <section class="tag-status">
         <h2>タグの状態</h2>
-
         <ul>
             {% for tag in tags %}
             <li>
@@ -30,17 +28,20 @@
         </ul>
     </section>
 
+    <!-- ② 天気 -->
     <div class="weather-card">
-        <span class="weather-icon">JAPAN</span>
+        <span class="weather-icon">japan</span>
         <span class="weather-text">新潟市の天気: <strong>{{ weather }}</strong></span>
     </div>
-    
+
+    <!-- ③ 傘の注意 -->
     {% if "雨" in weather or "雪" in weather %}
     <div style="margin-top: 20px; padding: 10px; background-color: #ffeef0; color: #fa5252; border-radius: 10px; font-weight: bold; font-size: 0.9rem;">
         外は{{ weather }}です。傘を忘れずに！
     </div>
     {% endif %}
 
+    <!-- ④ 今日の運勢 -->
     <div class="omikuji-card">
         <span>今日の運勢：</span>
         <strong class="omikuji-result {% if '大吉' in omikuji %}daikichi-style{% endif %}">
@@ -48,13 +49,15 @@
         </strong>
     </div>
 
+    <!-- ⑤ グラフボタン -->
     <div style="margin-top: 20px;">
         <a href="/log_graph" style="color:#1a5ab1; font-weight:bold; text-decoration:none;">
             📊 忘れ物ロググラフを見る
         </a>
     </div>
 
-    <p>※ ２秒ごとに自動で最新の状態に更新されます</p>
+    <!-- ⑥ 更新説明 -->
+    <p style="margin-top: 20px;">※ ２秒ごとに自動で最新の状態に更新されます</p>
 
 </body>
 </html>

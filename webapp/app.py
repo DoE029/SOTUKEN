@@ -13,6 +13,22 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATUS_FILE = os.path.join(BASE_DIR, "..", "tag_status.json")
 
 # ---------------------------------------------------------
+# グラフを表示する
+# ---------------------------------------------------------
+
+@app.route("/log_graph")
+def log_graph():
+    # ダミーデータ（後で本物のログに差し替え可能）
+    dummy_labels = ["月", "火", "水", "木", "金"]
+    dummy_values = [1, 0, 2, 1, 0]
+
+    return render_template(
+        "log_graph.html",
+        labels=dummy_labels,
+        values=dummy_values
+    )
+
+# ---------------------------------------------------------
 # 新潟市の天気予報を取得する関数
 # ---------------------------------------------------------
 def get_weather():
