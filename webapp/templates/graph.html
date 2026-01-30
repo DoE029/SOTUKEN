@@ -6,12 +6,9 @@
 
     <title>忘れ物ロググラフ</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        /* グラフカード（あなたのデザインに合わせたガラス風） */
         .graph-card {
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
@@ -22,18 +19,15 @@
             margin-top: 20px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         }
-
         h2 {
             text-align: center;
             color: #1a5ab1;
             margin-bottom: 20px;
         }
-
         .back-link {
             margin-top: 20px;
             text-align: center;
         }
-
         .back-link a {
             color: #1a5ab1;
             font-weight: bold;
@@ -45,6 +39,12 @@
 <body>
     <h1>忘れ物ログ（グラフ）</h1>
 
+    <!-- ★ Jinja2 のデータを data 属性に埋め込む -->
+    <div id="graph-data"
+         data-labels='{{ labels | tojson }}'
+         data-values='{{ values | tojson }}'>
+    </div>
+
     <div class="graph-card">
         <h2>忘れ物回数の推移</h2>
         <canvas id="logChart"></canvas>
@@ -53,5 +53,34 @@
     <div class="back-link">
         <a href="/">← ホームに戻る</a>
     </div>
+
+    <script>
+        // ★ data 属性から安全に JSON を取得
+        const graphData = document.getElementById("graph-data");
+        const labels = JSON.parse(graphData.dataset.labels);
+        const values = JSON.parse(graphData.dataset.values);
+
+        const ctx = document.getElementById('logChart');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '忘れ物回数',
+                    data: values,
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    </script>
 </body>
 </html>
