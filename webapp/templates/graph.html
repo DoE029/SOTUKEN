@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>忘れ物ロググラフ</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* グラフカード（あなたのデザインに合わせたガラス風） */
+        .graph-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 500px;
+            margin-top: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #1a5ab1;
+            margin-bottom: 20px;
+        }
+
+        .back-link {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .back-link a {
+            color: #1a5ab1;
+            font-weight: bold;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>忘れ物ログ（グラフ）</h1>
+
+    <div class="graph-card">
+        <h2>忘れ物回数の推移</h2>
+        <canvas id="logChart"></canvas>
+    </div>
+
+    <div class="back-link">
+        <a href="/">← ホームに戻る</a>
+    </div>
+</body>
+</html>
