@@ -18,8 +18,8 @@ TAG_NAME_FILE = os.path.join(BASE_DIR, "tag_names.json")
 
 # ----------------- 設定 --------------------
 
-START_TIME = "9:15"
-END_TIME   = "15:00"
+START_TIME = "10:15"
+END_TIME   = "10:17"
 RSSI_THRESHOLD = -85
 
 # --- ★ タグ名を外部ファイルから読み込む ---
