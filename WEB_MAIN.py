@@ -5,9 +5,7 @@ import os
 from BLE_New_beacon import scan_beacon  
 import LED_New_Buzzer as gpio       
 import time  
-import os   
 import random
-
 
 # ----------------- 絶対パス設定（systemd対応） -------------------- 
 
@@ -16,18 +14,25 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATUS_FILE = os.path.join(BASE_DIR, "tag_status.json")
 LOG_FILE = os.path.join(BASE_DIR, "beacon_log.txt") 
 STATS_FILE = os.path.join(BASE_DIR, "forget_stats.json")
+TAG_NAME_FILE = os.path.join(BASE_DIR, "tag_names.json")
 
 # ----------------- 設定 --------------------
 
-START_TIME = "9:15"   # チェック開始時刻（この時間になるまで待機）
-END_TIME   = "15:00"  # チェック終了時刻（この時間を過ぎたら終了）
+START_TIME = "9:15"
+END_TIME   = "15:00"
+RSSI_THRESHOLD = -85
 
-RSSI_THRESHOLD = -85  # タグの検知とみなすRSSIのしきい値
+# --- ★ タグ名を外部ファイルから読み込む ---
+def load_tag_names():
+    if os.path.exists(TAG_NAME_FILE):
+        try:
+            with open(TAG_NAME_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            pass
+    return {}
 
-
-# MACアドレスと表示名の対応表（ログや表示用）
-ID_MAP = {"DC:0D:30:16:88:8B": "タグ 1",
-          "DC:0D:30:16:87:F1": "タグ 2"}
+ID_MAP = load_tag_names()   # ★ ここが変更点
 
 # 最新のスキャン結果を保持するための変数
 latest_beacons = None
@@ -39,12 +44,11 @@ current_session_omikuji = None
 # Webアプリ用に現在の状態を保存する関数
 # ---------------------------------------------------------
 def save_status_for_web(beacons, target_ids, is_finished=False):
-    """Webアプリが読み取れるように現在の状態をJSONで保存する"""
-
-    # 今保存されているおみくじ結果を読み込む
     global current_session_omikuji
 
-    # 起動時にメインループでおみくじが引かれていない場合のバックアップ
+    global ID_MAP 
+    ID_MAP = load_tag_names()
+
     if current_session_omikuji is None:
         results = ["大吉", "中吉", "小吉", "吉", "末吉", "凶", "大凶"]
         weights = [5, 15, 20, 20, 40, 30, 10]
@@ -52,7 +56,6 @@ def save_status_for_web(beacons, target_ids, is_finished=False):
     
     status_data = []
     
-    # しきい値以上で検知できているタグのIDリスト（大文字統一）
     found_ids_near = [
         b["id"].upper() for b in beacons
         if b.get("rssi") is not None and b["rssi"] >= RSSI_THRESHOLD
@@ -61,33 +64,26 @@ def save_status_for_web(beacons, target_ids, is_finished=False):
     for t_id in target_ids:
         t_id_upper = t_id.upper()
         name = ID_MAP.get(t_id_upper, t_id_upper)
-        
-        # 検知状態の判定
         is_near = t_id_upper in found_ids_near
+
         status_data.append({
+            "mac": t_id_upper,
             "name": name,
             "status": "検知" if is_near else "未検知",
             "class": "in" if is_near else "out"
         })
 
-    # status_dataに時刻を追加
-    # 終了フラグを追加
     status_payload = {
-        "last_update": time.time(), # 現在時刻を記録
-        "is_finished": is_finished,  # 終了フラグ
-        "omikuji": current_session_omikuji,  # おみくじの結果を入れる
-        "tags": status_data  #タグのリスト
+        "last_update": time.time(),
+        "is_finished": is_finished,
+        "omikuji": current_session_omikuji,
+        "tags": status_data
     }
 
-    # ファイルに書き出し（Flask側が読み取れるように）
-    # 安全にファイルに書き出す（一時ファイル経由）
     temp_file = STATUS_FILE + ".tmp"
     try:
         with open(temp_file, "w", encoding="utf-8") as f:
-            # status_data 単体ではなく、時刻入りの status_payload を保存する
             json.dump(status_payload, f, indent=4, ensure_ascii=False)
-        
-        # 書き込みが終わったら一瞬で本番ファイルに置き換える
         os.replace(temp_file, STATUS_FILE)
     except Exception as e:
         print(f"ステータス保存エラー: {e}")
@@ -135,6 +131,9 @@ def update_and_log(beacons, target_ids):
 
     global latest_beacons
     latest_beacons = beacons  # 最新のスキャン結果を保存
+
+    global ID_MAP
+    ID_MAP = load_tag_names()
 
     print(f"--- 現在の状況 (しきい値: {RSSI_THRESHOLD}dBm) ---")
 

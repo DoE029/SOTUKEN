@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, jsonify
 import requests
 import json
 import os
@@ -13,7 +13,8 @@ app = Flask(__name__)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATUS_FILE = os.path.join(BASE_DIR, "..", "tag_status.json")
-LOG_FILE = os.path.join(BASE_DIR, "..", "beacon_log.txt")   # ← ログファイルの場所を追加
+LOG_FILE = os.path.join(BASE_DIR, "..", "beacon_log.txt")
+TAG_NAME_FILE = os.path.join(BASE_DIR, "..", "tag_names.json")   # ★ 追加
 
 
 # ---------------------------------------------------------
@@ -23,54 +24,54 @@ LOG_FILE = os.path.join(BASE_DIR, "..", "beacon_log.txt")   # ← ログファ�
 @app.route("/log_graph")
 def log_graph():
 
-    # MACアドレス → 表示名（Run.py と合わせる）
-    TAG_NAMES = {
-        "DC:0D:30:16:87:F1": "タグ 2",
-        "DC:0D:30:16:88:8B": "タグ 1"
-    }
+    from datetime import datetime
+    current_month = datetime.now().strftime("%Y-%m")  # ← 今月だけ抽出
 
-    items = []  # グラフ用に名前だけを集めるリスト
+    # ★ タグ名を外部ファイルから読み込む
+    TAG_NAMES = {}
+    if os.path.exists(TAG_NAME_FILE):
+        try:
+            with open(TAG_NAME_FILE, "r", encoding="utf-8") as f:
+                TAG_NAMES = json.load(f)
+        except:
+            TAG_NAMES = {}
 
-    # beacon_log.txt を読み込む
+    LOG_FILE = os.path.join(BASE_DIR, "..", "beacon_log.txt")
+    items = []
+
     if os.path.exists(LOG_FILE):
         with open(LOG_FILE, "r", encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
 
-                # 「全検知:」が含まれている行だけ処理
                 if "全検知:" not in line:
                     continue
 
-                # "全検知: [...]" の部分を取り出す
+                # 行の先頭の日付を取得
+                log_date = line.split(" ")[0]  # "2026-02-06"
+
+                # 今月以外はスキップ
+                if not log_date.startswith(current_month):
+                    continue
+
                 detected_str = line.split("全検知:")[1].strip()
 
                 try:
-                    # Python のリスト形式に変換
                     detected_list = ast.literal_eval(detected_str)
                 except:
                     continue
 
-                # 各タグを処理
                 for tag in detected_list:
                     mac = tag.get("id")
                     if mac in TAG_NAMES:
                         items.append(TAG_NAMES[mac])
 
-    # 集計（Counter を使って回数を数える）
     counter = Counter(items)
 
-    labels = list(counter.keys())     # ["タグ1", "タグ2", ...]
-    values = list(counter.values())   # [12, 8, ...]
+    labels = list(counter.keys())
+    values = list(counter.values())
 
-    # 上位5件のランキング
-    ranking = counter.most_common(5)
-
-    return render_template(
-        "graph.html",
-        labels=labels,
-        values=values,
-        ranking=ranking
-    )
+    return render_template("graph.html", labels=labels, values=values)
 
 
 # ---------------------------------------------------------
@@ -139,6 +140,34 @@ def home():
         omikuji=omikuji_result,
         is_finished=is_finished
     )
+
+
+# ---------------------------------------------------------
+# ★ タグ名更新API（index.html から fetch で呼ぶ）
+# ---------------------------------------------------------
+@app.route("/api/update_tag_name", methods=["POST"])
+def update_tag_name():
+    data = request.json
+    mac = data.get("mac")
+    new_name = data.get("name")
+
+    if not mac or not new_name:
+        return jsonify({"status": "error"}), 400
+
+    tag_names = {}
+    if os.path.exists(TAG_NAME_FILE):
+        try:
+            with open(TAG_NAME_FILE, "r", encoding="utf-8") as f:
+                tag_names = json.load(f)
+        except:
+            tag_names = {}
+
+    tag_names[mac] = new_name
+
+    with open(TAG_NAME_FILE, "w", encoding="utf-8") as f:
+        json.dump(tag_names, f, indent=4, ensure_ascii=False)
+
+    return jsonify({"status": "ok"})
 
 
 # ---------------------------------------------------------
