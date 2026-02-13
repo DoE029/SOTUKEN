@@ -47,10 +47,8 @@ def log_graph():
                 if "全検知:" not in line:
                     continue
 
-                # 行の先頭の日付を取得
-                log_date = line.split(" ")[0]  # "2026-02-06"
+                log_date = line.split(" ")[0]
 
-                # 今月以外はスキップ
                 if not log_date.startswith(current_month):
                     continue
 
@@ -119,7 +117,6 @@ def home():
 
                 is_finished = full_data.get("is_finished", False)
 
-                # おみくじの維持
                 if "omikuji" in full_data:
                     omikuji_result = full_data["omikuji"]
                 else:
@@ -154,6 +151,7 @@ def update_tag_name():
     if not mac or not new_name:
         return jsonify({"status": "error"}), 400
 
+    # ★ tag_names.json を更新
     tag_names = {}
     if os.path.exists(TAG_NAME_FILE):
         try:
@@ -166,6 +164,22 @@ def update_tag_name():
 
     with open(TAG_NAME_FILE, "w", encoding="utf-8") as f:
         json.dump(tag_names, f, indent=4, ensure_ascii=False)
+
+    # ★ ここから追加：tag_status.json も更新して即反映
+    if os.path.exists(STATUS_FILE):
+        try:
+            with open(STATUS_FILE, "r", encoding="utf-8") as f:
+                status_data = json.load(f)
+
+            for t in status_data.get("tags", []):
+                if t["mac"] == mac:
+                    t["name"] = new_name
+
+            with open(STATUS_FILE, "w", encoding="utf-8") as f:
+                json.dump(status_data, f, indent=4, ensure_ascii=False)
+
+        except Exception as e:
+            print("tag_status.json 更新エラー:", e)
 
     return jsonify({"status": "ok"})
 
