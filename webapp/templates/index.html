@@ -26,7 +26,11 @@
         <ul>
             {% for tag in tags %}
             <li>
-                <span>{{ tag.name }}</span>
+                <!-- ★ タグ名をタップすると変更できる -->
+                <span onclick="editName('{{ tag.mac }}', '{{ tag.name }}')" style="cursor:pointer; text-decoration:underline;">
+                    {{ tag.name }}
+                </span>
+
                 <span class="status {{ tag.class }}">{{ tag.status }}</span>
             </li>
             {% endfor %}
@@ -54,6 +58,29 @@
     </div>
 
     <p>※ ２秒ごとに自動で最新の状態に更新されます</p>
+
+    <!-- ★ タグ名変更用 JavaScript -->
+    <script>
+    function editName(mac, currentName) {
+        const newName = prompt("新しい名前を入力してください", currentName);
+        if (!newName) return;
+
+        fetch("/api/update_tag_name", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({mac: mac, name: newName})
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "ok") {
+                alert("名前を変更しました！");
+                location.reload();
+            } else {
+                alert("エラーが発生しました");
+            }
+        });
+    }
+    </script>
 
 </body>
 </html>

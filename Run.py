@@ -10,9 +10,24 @@ def start_system():
     END_HOUR = 22
     END_MINUTE = 0
 
-    # --- 絶対パス設定（systemd対応） ---
+    # --- 絶対パス設定  ---
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     STATUS_FILE = os.path.join(BASE_DIR, "tag_status.json")
+
+    # --- タグ名ファイルの読み込み ---
+    TAG_NAME_FILE = os.path.join(BASE_DIR, "tag_names.json")
+
+    def load_tag_names():
+        if os.path.exists(TAG_NAME_FILE):
+            try:
+                with open(TAG_NAME_FILE, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except:
+                pass
+        return {}
+
+    ID_MAP = load_tag_names()
+    print("読み込んだタグ名:", ID_MAP)
 
     # 起動時に終了フラグを False に戻す
     if os.path.exists(STATUS_FILE):
@@ -69,5 +84,3 @@ def start_system():
 
 if __name__ == "__main__":
     start_system()
-
-  
