@@ -39,7 +39,6 @@
 <body>
     <h1>忘れ物ログ（グラフ）</h1>
 
-    <!-- ★ Jinja2 のデータを data 属性に埋め込む -->
     <div id="graph-data"
          data-labels='{{ labels | tojson }}'
          data-values='{{ values | tojson }}'>
@@ -55,7 +54,7 @@
     </div>
 
     <script>
-        // ★ data 属性から安全に JSON を取得
+        //dataからJSONを取得
         const graphData = document.getElementById("graph-data");
         const labels = JSON.parse(graphData.dataset.labels);
         const values = JSON.parse(graphData.dataset.values);

@@ -7,7 +7,7 @@ import LED_New_Buzzer as gpio
 import time  
 import random
 
-# ----------------- 絶対パス設定（systemd対応） -------------------- 
+# ----------------- 絶対パス設定（systemd対応させといた） -------------------- 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__)) 
 
@@ -16,13 +16,13 @@ LOG_FILE = os.path.join(BASE_DIR, "beacon_log.txt")
 STATS_FILE = os.path.join(BASE_DIR, "forget_stats.json")
 TAG_NAME_FILE = os.path.join(BASE_DIR, "tag_names.json")
 
-# ----------------- 設定 --------------------
+# ----------------- 時間設定 --------------------
 
 START_TIME = "10:15"
 END_TIME   = "10:17"
 RSSI_THRESHOLD = -85
 
-# --- ★ タグ名を外部ファイルから読み込む ---
+# --- タグ名を外部ファイルから読み込む ---
 def load_tag_names():
     if os.path.exists(TAG_NAME_FILE):
         try:
@@ -32,16 +32,16 @@ def load_tag_names():
             pass
     return {}
 
-ID_MAP = load_tag_names()   # ★ ここが変更点
+ID_MAP = load_tag_names() 
 
-# 最新のスキャン結果を保持するための変数
+# あたらしいスキャン結果を保持しとくための変数
 latest_beacons = None
 
-# 起動時に決定するおみくじ結果を保持するグローバル変数
+# 起動時におみくじ結果を保持しとくグローバル変数
 current_session_omikuji = None
 
 # ---------------------------------------------------------
-# Webアプリ用に現在の状態を保存する関数
+# Webアプリのための今の状態を保存させとく関数
 # ---------------------------------------------------------
 def save_status_for_web(beacons, target_ids, is_finished=False):
     global current_session_omikuji
@@ -89,14 +89,14 @@ def save_status_for_web(beacons, target_ids, is_finished=False):
         print(f"ステータス保存エラー: {e}")
 
 # ---------------------------------------------------------
-# 忘れ物統計データを記録する関数
+#忘れ物統計データを記録
 # ---------------------------------------------------------
 def record_stats(missing_names):
     """不足していたタグの名前を統計ファイルに記録する"""
 
     stats = {}
 
-    # 既存の統計ファイルがあれば読み込む
+    #既存の統計ファイルがあれば読み込む
     if os.path.exists(STATS_FILE):
         try:
             with open(STATS_FILE, "r") as f:
@@ -104,43 +104,43 @@ def record_stats(missing_names):
         except:
             stats = {}
 
-    # 不足していたタグのカウントを増やす
+    #不足していたタグのカウントを増やす
     for name in missing_names:
         stats[name] = stats.get(name, 0) + 1
 
-    # 上書き保存
+    #上書き保存
     with open(STATS_FILE, "w") as f:
         json.dump(stats, f, indent=4)
 
 # ---------------------------------------------------------
-# 現在時刻が指定した時間帯に入っているか判定
+#現在時刻が指定した時間帯に入っているか判定
 # ---------------------------------------------------------
 def in_time_range(start_str, end_str):
     """現在時刻が START_TIME〜END_TIME の間かどうかを返す"""
 
-    now = datetime.datetime.now().time()  # 現在時刻（時刻のみ）
+    now = datetime.datetime.now().time()  # 現在時刻（時間だけ）
     start = datetime.datetime.strptime(start_str, "%H:%M").time()
     end = datetime.datetime.strptime(end_str, "%H:%M").time()
 
     return start <= now <= end
 
 # ---------------------------------------------------------
-# スキャン結果を表示・ログ保存・LED更新する関数
+#スキャン結果を表示・ログ保存・LED更新
 # ---------------------------------------------------------
 def update_and_log(beacons, target_ids):
 
     global latest_beacons
-    latest_beacons = beacons  # 最新のスキャン結果を保存
+    latest_beacons = beacons  #最新のスキャン結果を保存
 
     global ID_MAP
     ID_MAP = load_tag_names()
 
     print(f"--- 現在の状況 (しきい値: {RSSI_THRESHOLD}dBm) ---")
 
-    # Webアプリ用のデータを更新（スキャン中なので is_finished=False）
+    #Webアプリ用のデータ更新（スキャン中だから is_finished=False）
     save_status_for_web(beacons, target_ids, is_finished=False)
 
-    # 取得したタグごとに状態を表示
+    #取得したタグごとに状態を表示
     for b in beacons:
         raw_id = b['id'].upper()
         display_name = ID_MAP.get(raw_id, raw_id)
@@ -152,23 +152,22 @@ def update_and_log(beacons, target_ids):
 
         print(f"番号: {display_name} | RSSI: {rssi_display} | 状態: {status}")
 
-    # しきい値以上で検知できているタグ一覧
+    #しきい値以上で検知できているタグ一覧ひょうじ
     found_ids_near = [
         b["id"].upper() for b in beacons
         if b.get("rssi") is not None and b["rssi"] >= RSSI_THRESHOLD
     ]
 
-    # ログに保存
+    #ログに保存
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with open(LOG_FILE, "a") as f:
         f.write(f"{timestamp} | 全検知: {beacons}\n")
 
-    # LEDの状態を更新
+    #LEDの状態を更新
     gpio.update_status(beacons, target_ids, RSSI_THRESHOLD)
 
-    # 全て揃っているか判定
+    #全て揃っているか判定
     all_found = all(t.upper() in found_ids_near for t in target_ids)
-
     if all_found:
         print("全て近くにあります。忘れ物なし")
     else:
@@ -185,16 +184,14 @@ def update_and_log(beacons, target_ids):
 
     return all_found
 
-
 # ---------------------------------------------------------
-# 不足がある間、1秒ごとにブザーを鳴らすタスク
+#不足がある間、1秒ごとにブザーを鳴らすタスク
 # ---------------------------------------------------------
 async def buzzer_task(target_ids):
-
     while True:
         current_beacons = latest_beacons if latest_beacons is not None else []
 
-        # しきい値以上で検知できているタグ一覧
+        #しきい値以上で検知できているタグ一覧
         found_ids_near = [
             b["id"].upper() for b in current_beacons
             if b.get("rssi") is not None and b["rssi"] >= RSSI_THRESHOLD
@@ -211,13 +208,12 @@ async def buzzer_task(target_ids):
 
 
 # ---------------------------------------------------------
-# メインループ（時間帯まで待機 → チェック開始 → 終了）
+#メインループ　　時間帯まで待機 → チェック開始 → 終了
 # ---------------------------------------------------------
 async def main_loop(target_ids):
-
     global current_session_omikuji
-    
-    # 1. 起動した瞬間に今日のおみくじを確定させる
+
+    #起動した瞬間に今日のおみくじを確定させる
     results = ["大吉", "中吉", "小吉", "吉", "末吉", "凶", "大凶"]
     weights = [5, 15, 20, 20, 40, 30, 10]
     current_session_omikuji = random.choices(results, weights=weights, k=1)[0]
@@ -225,10 +221,10 @@ async def main_loop(target_ids):
 
     print(f"{START_TIME} 〜 {END_TIME} の間だけチェックを行います")
 
-    save_status_for_web([], target_ids, is_finished=False) # 終了フラグをfalseにする
+    save_status_for_web([], target_ids, is_finished=False) #終了フラグをfalseにする
     print("終了フラグをリセットしました。")
 
-    # 時間帯に入るまで待機（ここが「朝起動して時間まで待つ」部分）
+    #時間帯に入るまで待機（ここが朝起動して時間まで待つ部分）
     while not in_time_range(START_TIME, END_TIME):
         await asyncio.sleep(10)
 
@@ -236,37 +232,37 @@ async def main_loop(target_ids):
 
     print("チェック時間帯に入りました。スキャンを開始します")
 
-    gpio.setup_gpio()  # LED・ブザーのGPIO初期化
+    gpio.setup_gpio()  #LED・ブザーのGPIO初期化
     
-    # 不足がある間ブザーを鳴らすタスクを開始
+    #不足がある間ブザーを鳴らすタスクを開始
     buzzer_handle = asyncio.create_task(buzzer_task(target_ids))
 
     try:
-        # 時間帯の間だけスキャンを繰り返す
+        #時間帯の間だけスキャンを繰り返す
         while in_time_range(START_TIME, END_TIME):
 
             try:
-                # BLEタグをスキャン
+                #BLEタグをスキャン
                 beacons = await scan_beacon(timeout=3, target_ids=target_ids)
             except Exception as e:
                 print(f"スキャンエラー: {e}")
                 beacons = []
 
-            # スキャン結果があれば処理
+            #スキャン結果があれば処理
             if beacons:
                 all_found = update_and_log(beacons, target_ids)
             else:
-                # 何も見つからなかった場合
+                #何も見つからなかった場合
                 now_str = datetime.datetime.now().strftime('%H:%M:%S')
                 print(f"{now_str} 持ち物が見つかりません (範囲外)")
 
                 latest_beacons = []
-                # ここでも False を送って「プログラムは生きてるよ」と伝える
+                #ここでも False を送って「プログラムは生きてるよ」と伝える
                 save_status_for_web([], target_ids, is_finished=False)
                 gpio.update_status([], target_ids, RSSI_THRESHOLD)
                 all_found = False
 
-            # 全部揃ったら終了
+            #全部揃ったら終了
             if all_found:
                 print("全部揃いました")
                 #終了フラグを保存
@@ -276,20 +272,20 @@ async def main_loop(target_ids):
                     buzzer_handle.cancel()
 
                 try:
-                    gpio.set_all_blue_leds(True)  # 青LEDを点灯
+                    gpio.set_all_blue_leds(True)  #青LEDを点灯
                     await asyncio.sleep(10)
                 except AttributeError:
                     pass
 
                 break
 
-            await asyncio.sleep(3)  # 次のスキャンまで待機
+            await asyncio.sleep(3)  #次のスキャンまで待機
 
     except KeyboardInterrupt:
         print("手動終了")
 
     finally:
-        # ブザータスクが残っていたら停止
+        #ブザータスクが残っていたら停止
         if buzzer_handle and not buzzer_handle.done():
             buzzer_handle.cancel()
 
@@ -298,11 +294,11 @@ async def main_loop(target_ids):
 
 
 # ---------------------------------------------------------
-# プログラムのエントリーポイント
+#プログラムのエントリーポイント
 # ---------------------------------------------------------
 if __name__ == "__main__":
-    # チェック対象のタグ（MACアドレス）
+    #チェック対象のタグ（MACアドレス）
     targets = ["DC:0D:30:16:88:8B", "DC:0D:30:16:87:F1"]
 
-    # メインループ開始
+    #メインループ開始
     asyncio.run(main_loop(targets))

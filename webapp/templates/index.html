@@ -26,7 +26,7 @@
         <ul>
             {% for tag in tags %}
             <li>
-                <!-- ★ タグ名をタップすると変更できる -->
+                <!-- タグ名をタップすると変更できる -->
                 <span onclick="editName('{{ tag.mac }}', '{{ tag.name }}')" style="cursor:pointer; text-decoration:underline;">
                     {{ tag.name }}
                 </span>

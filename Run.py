@@ -6,15 +6,15 @@ import json
 from datetime import datetime
 
 def start_system():
-    # --- 設定：終了したい時間を指定 ---
+    #--- 終了したい時間を指定 ---
     END_HOUR = 22
     END_MINUTE = 0
 
-    # --- 絶対パス設定  ---
+    #--- 絶対パス設定  ---
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     STATUS_FILE = os.path.join(BASE_DIR, "tag_status.json")
 
-    # --- タグ名ファイルの読み込み ---
+    #-- タグ名ファイルの読み込み ---
     TAG_NAME_FILE = os.path.join(BASE_DIR, "tag_names.json")
 
     def load_tag_names():
@@ -29,7 +29,7 @@ def start_system():
     ID_MAP = load_tag_names()
     print("読み込んだタグ名:", ID_MAP)
 
-    # 起動時に終了フラグを False に戻す
+    #起動時に終了フラグを False に戻す
     if os.path.exists(STATUS_FILE):
         try:
             with open(STATUS_FILE, "r", encoding="utf-8") as f:
@@ -43,7 +43,7 @@ def start_system():
 
     print("忘れ物探知システムを起動しています...")
 
-    # 1. Webアプリ (app.py) を起動
+    #app.pyを起動
     flask_dir = os.path.join(BASE_DIR, "webapp")
     flask_process = subprocess.Popen(
         [sys.executable, "app.py"],
@@ -53,14 +53,14 @@ def start_system():
 
     time.sleep(3)
 
-    # 2. メインのスキャンプログラム (WEB_MAIN.py) を起動
+    #WEB_MAIN.pyを起動
     print("ビーコンスキャンを開始します...")
     try:
         subprocess.run([sys.executable, "WEB_MAIN.py"], cwd=BASE_DIR, check=True)
 
         print(f"\nスキャン完了！ {END_HOUR:02d}:{END_MINUTE:02d} までWebアプリを維持します。")
 
-        # 指定時刻まで待機
+        #指定時刻まで待機させるやつ👇これもいじらないで
         while True:
             now = datetime.now()
 
@@ -79,7 +79,7 @@ def start_system():
         flask_process.terminate()
         time.sleep(2)
 
-        #------------自動シャットダウン-------------
+        #------------自動シャットダウン　★絶対いじるな★-------------
         os.system("sudo shutdown -h now")
 
 if __name__ == "__main__":

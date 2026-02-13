@@ -95,12 +95,12 @@ p {
 
 .tag-status {
     background-color: rgba(255, 255, 255, 0.95);
-    width: 90%;          /* スマホの時に横幅90%に広げる */
-    max-width: 450px;    /* PCなどの大きな画面では最大450pxに制限 */
-    padding: 25px;       /* 内側の余白を少し調整 */
+    width: 90%;          /*スマホの時に横幅90%に広げる */
+    max-width: 450px;    /*PCなどの大きな画面では最大450pxに制限 */
+    padding: 25px;       /*内側の余白を少し調整 */
     border-radius: 24px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-    box-sizing: border-box; /* パディングを含めたサイズ計算にする（はみ出し防止） */
+    box-sizing: border-box; /*パディングを含めたサイズ計算にする（はみ出し防止） */
 }
 
 
@@ -140,7 +140,7 @@ p {
 }
 
 .omikuji-card {
-    background: #fffbe6; /* 優しい黄色 */
+    background: #fffbe6;
     padding: 10px 20px;
     border-radius: 15px;
     margin-bottom: 20px;
@@ -154,7 +154,7 @@ p {
     color: #e67e22;
 }
 
-/* 大吉の時だけキラキラさせる */
+/* 大吉の時だけキラキラさせるやつ */
 .daikichi-style {
     color: #ff4d4f;
     font-size: 1.5rem;

@@ -9,7 +9,7 @@ from collections import Counter
 
 app = Flask(__name__)
 
-# --- 絶対パス設定（systemd対応） --- 
+#--- 絶対パス設定(絶対パスにしないと動かなかった) --- 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATUS_FILE = os.path.join(BASE_DIR, "..", "tag_status.json")
@@ -18,16 +18,16 @@ TAG_NAME_FILE = os.path.join(BASE_DIR, "..", "tag_names.json")   # ★ 追加
 
 
 # ---------------------------------------------------------
-# グラフを表示する（本物のログを使用）
+#グラフの表示
 # ---------------------------------------------------------
 
 @app.route("/log_graph")
 def log_graph():
 
     from datetime import datetime
-    current_month = datetime.now().strftime("%Y-%m")  # ← 今月だけ抽出
+    current_month = datetime.now().strftime("%Y-%m")  # ← 今月だけ抽出するやつ
 
-    # ★ タグ名を外部ファイルから読み込む
+    #タグ名を外部ファイルから読み込む
     TAG_NAMES = {}
     if os.path.exists(TAG_NAME_FILE):
         try:
@@ -52,6 +52,7 @@ def log_graph():
                 if not log_date.startswith(current_month):
                     continue
 
+                #全権地の部分を探して数値化するやつ👇
                 detected_str = line.split("全検知:")[1].strip()
 
                 try:
@@ -73,7 +74,7 @@ def log_graph():
 
 
 # ---------------------------------------------------------
-# 新潟市の天気予報を取得する関数
+#新潟市の天気予報を取得
 # ---------------------------------------------------------
 def get_weather():
     try:
@@ -90,7 +91,7 @@ def get_weather():
 
 
 # ---------------------------------------------------------
-# おみくじの結果を決める関数[重み付け]
+#おみくじの結果表示
 # ---------------------------------------------------------
 def get_omikuji():
     results = ["大吉", "中吉", "小吉", "吉", "末吉", "凶", "大凶"]
@@ -100,7 +101,7 @@ def get_omikuji():
 
 
 # ---------------------------------------------------------
-# ホーム画面（天気・タグ状態・おみくじ）
+#ホーム画面（天気・タグ状態・おみくじ）
 # ---------------------------------------------------------
 @app.route("/")
 def home():
@@ -140,7 +141,7 @@ def home():
 
 
 # ---------------------------------------------------------
-# ★ タグ名更新API（index.html から fetch で呼ぶ）
+#タグ名更新API（index.html から fetch？ で呼ぶ）👈まだよくわかってないからいじらないで
 # ---------------------------------------------------------
 @app.route("/api/update_tag_name", methods=["POST"])
 def update_tag_name():
@@ -151,7 +152,7 @@ def update_tag_name():
     if not mac or not new_name:
         return jsonify({"status": "error"}), 400
 
-    # ★ tag_names.json を更新
+    #tag_names.json を更新
     tag_names = {}
     if os.path.exists(TAG_NAME_FILE):
         try:
@@ -165,7 +166,7 @@ def update_tag_name():
     with open(TAG_NAME_FILE, "w", encoding="utf-8") as f:
         json.dump(tag_names, f, indent=4, ensure_ascii=False)
 
-    # ★ ここから追加：tag_status.json も更新して即反映
+    #tag_status.json も更新して即反映させるやつ
     if os.path.exists(STATUS_FILE):
         try:
             with open(STATUS_FILE, "r", encoding="utf-8") as f:
@@ -185,7 +186,7 @@ def update_tag_name():
 
 
 # ---------------------------------------------------------
-# Flask 起動
+#Flask 起動
 # ---------------------------------------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
